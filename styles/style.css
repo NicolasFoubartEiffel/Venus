@@ -1,0 +1,224 @@
+/* Base */
+body {
+    font-family: sans-serif;
+    margin: 2em;
+    background: #f5f5f5;
+}
+
+nav a {
+    margin-right: 1em;
+}
+
+/* Formulaires */
+form input,
+form select,
+form textarea {
+    display: block;
+    margin: 0.5em 0;
+    padding: 0.5em;
+    width: 100%;
+}
+
+/* Boutons */
+button,
+input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover,
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+/* Colonnes */
+.project-columns {
+    display: flex;
+    gap: 2rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    margin-top: 2rem;
+}
+
+.project-column {
+    flex: 1;
+    min-width: 250px;
+    max-width: 350px;
+    background-color: #f8f8f8;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.project-column h3 {
+    margin-bottom: 1rem;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5rem;
+}
+
+/* Catégorie prioritaire sticky à gauche */
+.project-column.sticky-column {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: #fff;
+    border: 2px solid #ed9191;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+/* Cartes projet */
+.project-card {
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border: 1px solid #e0e0e0;
+}
+
+.project-card:hover {
+    transform: scale(1.01);
+    background-color: #f8f8f8;
+}
+
+/* Ombres colorées selon le statut */
+.project-card.status-1 {
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4); /* À faire */
+}
+
+.project-card.status-2 {
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4); /* Fait */
+}
+
+.project-card.status-3 {
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4); /* En retard */
+}
+
+/* Titre */
+.title-header {
+    background: #84b8ff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    margin-bottom: 0.6rem;
+}
+
+.title-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #1a1a1a;
+}
+
+/* Tâche */
+.task {
+    background: #ffcb84;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    font-style: italic;
+    color: #555;
+    margin-bottom: 0.6rem;
+}
+
+/* Lien */
+.link {
+    margin-bottom: 0.6rem;
+}
+
+.link a {
+    color: #1a73e8;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+/* Infobulle (hint) */
+.hint-icon {
+    position: relative;
+    display: inline-block;
+    margin-left: 0.4rem;
+    cursor: help;
+}
+
+.tooltip {
+    visibility: hidden;
+    width: max-content;
+    max-width: 250px;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 0.5rem;
+    position: absolute;
+    z-index: 1;
+    top: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    white-space: normal;
+}
+
+.hint-icon:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Badge de statut */
+.status {
+    float: right;
+    display: inline-block;
+    padding: 0.45rem 0.9rem;
+    border-radius: 0.5rem;
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+}
+
+/* Couleurs des statuts */
+.status-1 .status { background-color: #FF9800; }
+.status-2 .status { background-color: #4CAF50; }
+.status-3 .status { background-color: #F44336; }
+
+/* Dates */
+.dates {
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    float: left;
+}
+
+.dates i {
+    color: #d32f2f;
+}
+
+/* Description */
+.desc {
+    margin: 3px;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* Bloc d'infos supplémentaires */
+.project-card .more-info {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.4s ease;
+    opacity: 0;
+    padding-top: 0;
+}
+
+.project-card.open .more-info {
+    max-height: 500px;
+    opacity: 1;
+    padding-top: 0.5em;
+}
