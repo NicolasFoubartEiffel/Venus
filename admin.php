@@ -3,7 +3,6 @@ require_once __DIR__ . '/db/functions.php';
 $projects = getAllProjects();
 $groupedProjects = groupProjectsByStatusAndCategory($projects);
 $categories = getAllCategories();
-$statuses = getAllStatuses();
 $important = getImportantCategory();
 ?>
 <!DOCTYPE html>
@@ -86,7 +85,7 @@ $important = getImportantCategory();
                         <?php else:?>
                             <div class="project-card">
                         <?php endif;?>
-                            <div class="title"><?= htmlspecialchars($p['title']) ?> - <span style="color:<?= $p['status_color']?>"><?= htmlspecialchars($p['status_name']) ?></span></div>
+                            <div class="title"><?= htmlspecialchars($p['title']) ?></div>
                             <?php if (!empty($p['description'])): ?>
                                 <div class="desc"><?= nl2br(htmlspecialchars($p['description'])) ?></div>
                             <?php endif; ?>

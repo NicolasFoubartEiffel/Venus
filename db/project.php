@@ -29,20 +29,21 @@ function createCategory(string $name, mixed $important = 0): bool {
     }
 }
 
-
-
-function getAllProjects(): array {
-    global $pdo;
-    $sql = "SELECT * FROM projects LEFT JOIN categories ON projects.category_id = categories.id ORDER BY categories.important DESC, start_date ASC";
-    return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-}
-
 function getProjectById(int $id): ?array {
     global $pdo;
     $stmt = $pdo->prepare("SELECT * FROM projects WHERE id = :id");
     $stmt->execute(['id' => $id]);
     return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
 }
+
+function getProjectsByCategoryId(int $id): ?array {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT * FROM projects WHERE category_id = :id");
+    $stmt->execute(['id' => $id]);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $results ?: null;
+}
+
 
 function createProject(array $data): void {
     global $pdo;

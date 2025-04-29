@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/db/functions.php';
+require_once 'db/functions.php';
 $projects = getAllProjects();
 $groupedProjects = groupProjectsByStatusAndCategory($projects);
 $categories = getAllCategories();
@@ -20,78 +20,46 @@ $categories = getAllCategories();
     <a href="admin.php">⚙️ Admin</a>
 </nav>
 <b><u>Cliquez sur une carte pour obtenir plus d'informations</u></b>
-<div class="project-columns">
-    <?php foreach ($categories as $cat): ?>
-        <?php $stickyClass = ($cat['important'] == 1) ? 'sticky-column' : ''; ?>
-        <div class="project-column <?= $stickyClass ?>">
-            <h3><?= htmlspecialchars($cat['name']) ?></h3>
-
-            <?php
-            $list = $groupedProjects[$cat['id']] ?? [];
-            ?>
-
-            <?php if (empty($list)): ?>
-                <p><em>Aucun projet</em></p>
-            <?php else: ?>
-                <?php foreach ($list as $p): ?>
-                    <div class="project-card">
-                        <!-- Titre -->
-                        <div class="title-header">
-                            <h2><?= htmlspecialchars($p['title']) ?></h2>
-                        </div>
-
-                        <!-- Tâche -->
-                        <?php if (!empty($p['task'])): ?>
-                            <div class="task"><em>Tâche :</em> <?= nl2br(htmlspecialchars($p['task'])) ?></div>
-                        <?php endif; ?>
-
-                        <!-- Lien + indice -->
-                        <?php if (!empty($p['link'])): ?>
-                            <div class="link">
-                                <?php if (isValidUrl($p['link'])): ?>
-                                    <a href="<?= htmlspecialchars($p['link']) ?>" target="_blank">🔗 Lien vers l'application</a>
-                                <?php else: ?>
-                                    <?= htmlspecialchars($p['link']) ?>
-                                <?php endif; ?>
-
-                                <?php if (!empty($p['hint'])): ?>
-                                    <?php if (isValidUrl($p['hint'])): ?>
-                                        <br><sub><a href="<?= htmlspecialchars($p['hint']) ?>" target="_blank">🔗 Tutoriel</a></sub>
-                                    <?php else: ?>
-                                        <br><sub><?= htmlspecialchars($p['hint']) ?></sub>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-
-
-
-
-                        <div class="more-info">
-                            <!-- Dates -->
-                            <?php if (!empty($p['start_date']) || !empty($p['end_date'])): ?>
-                                <div class="dates">
-                                    Période :
-                                    📅
-                                    <b><?= $p['start_date'] ? formatDateFr($p['start_date']) : '—' ?></b>
-                                    -
-                                    <b><?= $p['end_date'] ? formatDateFr($p['end_date']) : '—' ?></b>
-                                </div>
-                            <?php endif; ?>
-
-                            <!-- Description -->
-                            <?php if (!empty($p['description'])): ?>
-                                <u>Description</u> :
-                                <div class="desc">
-                                    <?= nl2br(htmlspecialchars($p['description'])) ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+<div class="layout-wrapper">
+    <!-- Colonne sticky avec les catégories importantes -->
+    <div class="sticky-wrapper">
+        <?php foreach ($categories as $cat): ?>
+            <?php if ($cat['important'] == 1): ?>
+                <div class="project-column sticky-column">
+                    <h3><?= htmlspecialchars($cat['name']) ?></h3>
+                    <?php $list = $groupedProjects[$cat['id']] ?? []; ?>
+                    <?php if (empty($list)): ?>
+                        <p><em>Aucun projet</em></p>
+                    <?php else: ?>
+                        <?php foreach ($list as $p): ?>
+                            <?php include 'cards.php'; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             <?php endif; ?>
-        </div>
-    <?php endforeach; ?>
+        <?php endforeach; ?>
+    </div>
+
+    <div class="category-grid">
+        <?php
+        $counter = -1;
+        foreach ($categories as $cat):
+        // Si on a déjà affiché 5 catégories, on commence une nouvelle colonne
+        if ($counter % 5 == 0 && $counter > 0): ?>
+    </div><div class="category-column">
+        <?php endif; ?>
+
+        <?php if ($cat['important'] != 1): ?>
+            <div class="category-pill" data-cat-id="<?= $cat['id'] ?>">
+                <?= htmlspecialchars($cat['name']) ?>
+            </div>
+            <div class="project-container" id="projects-cat-<?= $cat['id'] ?>"></div>
+        <?php endif; ?>
+
+        <?php $counter++; endforeach; ?>
+    </div>
+
+
 </div>
 
 </body>

@@ -89,18 +89,6 @@ input[type="submit"]:hover {
     background-color: #f8f8f8;
 }
 
-/* Ombres colorées selon le statut */
-.project-card.status-1 {
-    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4); /* À faire */
-}
-
-.project-card.status-2 {
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4); /* Fait */
-}
-
-.project-card.status-3 {
-    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4); /* En retard */
-}
 
 /* Titre */
 .title-header {
@@ -169,23 +157,6 @@ input[type="submit"]:hover {
     opacity: 1;
 }
 
-/* Badge de statut */
-.status {
-    float: right;
-    display: inline-block;
-    padding: 0.45rem 0.9rem;
-    border-radius: 0.5rem;
-    color: white;
-    font-weight: 600;
-    font-size: 0.95rem;
-    margin-bottom: 0.6rem;
-}
-
-/* Couleurs des statuts */
-.status-1 .status { background-color: #FF9800; }
-.status-2 .status { background-color: #4CAF50; }
-.status-3 .status { background-color: #F44336; }
-
 /* Dates */
 .dates {
     font-size: 0.95rem;
@@ -221,4 +192,105 @@ input[type="submit"]:hover {
     max-height: 500px;
     opacity: 1;
     padding-top: 0.5em;
+}
+
+
+.layout-wrapper {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    margin: 1rem;
+}
+
+.sticky-wrapper {
+    flex: 0 0 300px;
+    position: sticky;
+    top: 1rem;
+    height: fit-content;
+}
+
+.sticky-column {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    flex: 1;
+}
+
+.project-card-category {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #e0e0e0;
+}
+
+.project-card-category h3 {
+    font-size: 1.2rem;
+    color: #222;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.4rem;
+}
+
+.project-card {
+    background-color: #fdfdfd;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.project-card h4 {
+    margin: 0 0 0.4rem 0;
+    font-size: 1rem;
+    color: #333;
+}
+
+.project-card p {
+    margin: 0.2rem 0;
+    font-size: 0.9rem;
+}
+
+.category-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.category-pill {
+    background-color: white;
+    border: 1px solid #80bfff;
+    width: 250px;
+    border-radius: 12px;
+    padding: 2rem 5rem;
+    text-align: center;
+    font-size: 1rem;
+    color: #132a82;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: background-color 0.3s ease, transform 0.2s;
+    cursor: default;
+    margin-bottom: 15px;
+}
+
+.category-pill:hover {
+    background-color: #f0f8ff;
+    transform: translateY(-2px);
+}
+
+
+.project-container {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease;
+}
+
+.project-container.open {
+    margin-top: 0.5rem;
 }
