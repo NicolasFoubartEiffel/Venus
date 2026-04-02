@@ -1,20 +1,28 @@
 <?php
-require_once 'db/project.php';
+require_once __DIR__ . '/db/functions.php';
 
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+$id = (int)($_GET['id'] ?? 0);
+if ($id <= 0) {
     http_response_code(400);
-    exit('ID manquant ou invalide');
-}
-
-$id = (int) $_GET['id'];
-$projects = getProjectsByCategoryId($id);
-
-if (!$projects) {
-    echo "<p style='padding: 1rem; font-style: italic;'>Aucun projet dans cette catégorie.</p>";
+    echo '<em>Paramètre invalide</em>';
     exit;
 }
 
-// On boucle et on utilise le template
-foreach ($projects as $p) {
-    include 'cards.php'; // adapte le chemin si besoin
+$p = getProjectById($id);
+if (!$p) {
+    http_response_code(404);
+    echo '<em>Projet introuvable</em>';
+    exit;
 }
+
+$contact = $p['contact'] ?? '';
+$link    = $p['link'] ?? '';
+$link2   = $p['link_2'] ?? '';
+$desc    = $p['description'] ?? '';
+
+?>
+<div class="project-detail">
+    <div class="detail-desc">
+        <?= $desc !== '' ? $desc : '<em>Aucune description</em>' ?>
+    </div>
+</div>

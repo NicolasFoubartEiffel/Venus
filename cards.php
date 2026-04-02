@@ -1,48 +1,30 @@
-<?php
-    require_once 'db/functions.php';
-?>
-<div class="project-card">
-    <div class="title-header">
-        <h2><?= htmlspecialchars($p['title']) ?></h2>
-    </div>
-    <?php if (!empty($p['task'])): ?>
-        <div class="task"><em>Tâche :</em> <?= nl2br(htmlspecialchars($p['task'])) ?></div>
-    <?php endif; ?>
-    <?php if (!empty($p['link'])): ?>
-        <div class="link">
-            <?php if (isValidUrl($p['link'])): ?>
-                <a href="<?= htmlspecialchars($p['link']) ?>" target="_blank">🔗 Lien vers l'application</a>
-            <?php else: ?>
-                <?= htmlspecialchars($p['link']) ?>
-            <?php endif; ?>
+<!-- Modal (popup) projet -->
+<div id="project-modal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close="1"></div>
 
-            <?php if (!empty($p['hint'])): ?>
-                <?php if (isValidUrl($p['hint'])): ?>
-                    <br><sub><a href="<?= htmlspecialchars($p['hint']) ?>" target="_blank">🔗 Tutoriel</a></sub>
-                <?php else: ?>
-                    <br><sub><?= htmlspecialchars($p['hint']) ?></sub>
-                <?php endif; ?>
-            <?php endif; ?>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <button type="button" class="modal-close" data-close="1" aria-label="Fermer">✕</button>
+
+        <div class="modal-header">
+            <div class="modal-title" id="modal-title"></div>
+            <div class="modal-subtext" id="modal-subtext"></div>
+
+            <div class="modal-actions">
+                <!-- on garde tes 3 boutons, même si on ne fait plus mailto/open/doc -->
+                <button class="tile-btn" type="button" data-modal-action="mailto" aria-label="Contacter">
+                    <img src="assets/icons/mail_icon.png" alt="">
+                </button>
+                <button class="tile-btn" type="button" data-modal-action="open" aria-label="Ouvrir le lien">
+                    <img src="assets/icons/mail_link.png" alt="">
+                </button>
+                <button class="tile-btn" type="button" data-modal-action="doc" aria-label="Ouvrir la documentation">
+                    <img src="assets/icons/mail_doc.png" alt="">
+                </button>
+            </div>
         </div>
-    <?php endif; ?>
-    <div class="more-info">
-        <!-- Dates -->
-        <?php if (!empty($p['start_date']) || !empty($p['end_date'])): ?>
-            <div class="dates">
-                Période :
-                📅
-                <b><?= $p['start_date'] ? formatDateFr($p['start_date']) : '—' ?></b>
-                -
-                <b><?= $p['end_date'] ? formatDateFr($p['end_date']) : '—' ?></b>
-            </div>
-        <?php endif; ?>
-        <br><br>
-        <!-- Description -->
-        <?php if (!empty($p['description'])): ?>
-            <u>Description</u> :
-            <div class="desc">
-                <?= nl2br(htmlspecialchars($p['description'])) ?>
-            </div>
-        <?php endif; ?>
+
+        <div class="modal-body">
+            <div id="modal-description"></div>
+        </div>
     </div>
 </div>

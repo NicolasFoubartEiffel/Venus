@@ -35,17 +35,17 @@ try {
         exit;
     }
 
-    // ✅ AJOUT : récupération d'un projet (édition)
     if ($action === 'get_project') {
         $id = (int)($_POST['id'] ?? 0);
         if ($id <= 0) throw new InvalidArgumentException("ID invalide.");
+
         $p = getProjectById($id);
         if (!$p) throw new InvalidArgumentException("Projet introuvable.");
-        // ✅ AJOUT CRITIQUE
-        $p['category_ids'] = getProjectCategoryIds($id);
+
         echo json_encode(['success' => true, 'project' => $p]);
         exit;
     }
+
 
 
     echo json_encode(['success' => false, 'message' => 'Action inconnue: ' . $action]);
