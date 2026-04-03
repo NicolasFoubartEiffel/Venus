@@ -72,7 +72,7 @@
             <div class="info-box">
                 <div class="info-head">
                     <span class="info-ico" aria-hidden="true">ℹ️</span>
-                    <span class="info-label">Information 1</span>
+                    <span class="info-label">Liens utiles</span>
                 </div>
 
                 <div class="info-title">
@@ -98,7 +98,7 @@
             <div class="info-box">
                 <div class="info-head">
                     <span class="info-ico" aria-hidden="true">📎</span>
-                    <span class="info-label">Information 2</span>
+                    <span class="info-label">Ressources documentaires</span>
                 </div>
 
                 <div class="info-title">

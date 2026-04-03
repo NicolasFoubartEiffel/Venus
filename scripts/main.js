@@ -6,13 +6,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTitle = document.getElementById('modal-title');
     const modalSubtext = document.getElementById('modal-subtext');
     const modalDesc = document.getElementById('modal-description');
+    const modalActionButtons = Array.from(
+        document.querySelectorAll('[data-modal-action]')
+    );
+
+    const forceLinksTargetBlank = (container) => {
+        if (!container) return;
+
+        container.querySelectorAll('a').forEach(link => {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+        });
+    };
 
     if (!modal || !modalTitle || !modalSubtext || !modalDesc) return;
 
+    let currentTile = null;
     let currentData = null;
-    let currentTile = null; // tuile active (pour style is-active)
+    let currentView = 'project';
 
-    // feedback UI (loading/active)
+    /* =========================================================
+     * Helpers UI
+     * ========================================================= */
     const setTileLoading = (tile, on) => {
         if (!tile) return;
         tile.classList.toggle('is-loading', !!on);
@@ -21,112 +36,133 @@ document.addEventListener('DOMContentLoaded', () => {
     const setTileActive = (tile, on) => {
         document.querySelectorAll('.project-tile.is-active')
             .forEach(t => t.classList.remove('is-active'));
-        if (tile && on) tile.classList.add('is-active');
+
+        if (tile && on) {
+            tile.classList.add('is-active');
+        }
     };
 
-    // decode HTML depuis data-* (car tes data-* sont htmlspecialchars côté PHP)
-    const decodeHtml = (s) => {
-        const div = document.createElement('div');
-        div.innerHTML = s ?? '';
-        return div.textContent ?? '';
+    const setModalActionActive = (view) => {
+        const map = {
+            contact: 'mailto',
+            info1: 'open',
+            info2: 'doc',
+        };
+
+        modalActionButtons.forEach(btn => {
+            const action = btn.dataset.modalAction;
+            const isActive = map[view] === action;
+            btn.classList.toggle('is-active', isActive);
+            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
     };
 
-    const getSafeHtml = (maybeEncodedHtml) => {
-        // on décode ce qui vient du data-attr
-        const html = decodeHtml(maybeEncodedHtml || '');
-        return html.trim();
-    };
+    /* =========================================================
+     * Helpers contenu
+     * ========================================================= */
+    const getTpl = (tile, selector) =>
+        (tile.querySelector(selector)?.innerHTML || '').trim();
 
-    const renderSection = (label, title, html) => {
-        const t = (title || '').trim();
-        const body = (html || '').trim();
+    const buildTileData = (tile) => ({
+        title: tile.dataset.title || '',
+        subtext: tile.dataset.subtext || '',
+        contact: tile.dataset.contact || '',
+        info1_title: tile.dataset.info1Title || '',
+        info2_title: tile.dataset.info2Title || '',
 
-        return `
-            <div class="card-section">
-                <div class="label">${label}</div>
-                <div class="value">${t ? t : '<span class="muted">Non renseigné</span>'}</div>
-                <div class="wysiwyg wysiwyg--compact" style="margin-top:10px;">
-                    ${body ? body : '<span class="muted"><em>Aucune description</em></span>'}
-                </div>
-            </div>
-        `;
-    };
+        contact_desc: getTpl(tile, '.tpl-contact-desc'),
+        info1_desc: getTpl(tile, '.tpl-info1-desc'),
+        info2_desc: getTpl(tile, '.tpl-info2-desc'),
+        description: getTpl(tile, '.tpl-description'),
+    });
+
+    const renderEmptyText = (text) =>
+        `<span class="muted">${text}</span>`;
+
+    const renderEmptyDescription = () =>
+        '<span class="muted"><em>Aucune description</em></span>';
 
     const renderProject = () => {
         const body = (currentData?.description || '').trim();
 
         return `
-        <div class="card-section">
-            <div class="section-title section-title--center">
-                Description avancée
-            </div>
+            <div class="card-section">
+                <div class="section-title section-title--center">
+                    Description avancée
+                </div>
 
-            <div class="wysiwyg" style="margin-top:12px;">
-                ${body ? body : '<span class="muted"><em>Aucune description</em></span>'}
+                <div class="wysiwyg" style="margin-top:12px;">
+                    ${body || renderEmptyDescription()}
+                </div>
             </div>
-        </div>
-    `;
+        `;
     };
 
-    const renderInfoBlockWithProject = (title, html) => {
+    const renderInfoBlock = (title, html, withProject = true) => {
         const t = (title || '').trim();
         const body = (html || '').trim();
 
         return `
-        <div class="card-section">
-            <div class="section-title">
-                ${t ? t : '<span class="muted">Non renseigné</span>'}
+            <div class="card-section">
+                <div class="section-title">
+                    ${t || renderEmptyText('Non renseigné')}
+                </div>
+
+                <div class="wysiwyg wysiwyg--compact" style="margin-top:12px;">
+                    ${body || renderEmptyDescription()}
+                </div>
             </div>
 
-            <div class="wysiwyg wysiwyg--compact" style="margin-top:12px;">
-                ${body ? body : '<span class="muted"><em>Aucune description</em></span>'}
-            </div>
-        </div>
-
-        <hr style="border:0;border-top:1px solid rgba(0,0,0,.08);margin:18px 0;">
-
-        ${renderProject()}
-    `;
+            ${withProject ? `
+                <hr style="border:0;border-top:1px solid rgba(0,0,0,.08);margin:18px 0;">
+                ${renderProject()}
+            ` : ''}
+        `;
     };
 
-    const renderContact = () =>
-        renderInfoBlockWithProject(currentData?.contact, currentData?.contact_desc);
+    const renderView = (view) => {
+        switch (view) {
+            case 'contact':
+                return renderInfoBlock(currentData?.contact, currentData?.contact_desc);
 
-    const renderInfo1 = () =>
-        renderInfoBlockWithProject(currentData?.info1_title, currentData?.info1_desc);
+            case 'info1':
+                return renderInfoBlock(currentData?.info1_title, currentData?.info1_desc);
 
-    const renderInfo2 = () =>
-        renderInfoBlockWithProject(currentData?.info2_title, currentData?.info2_desc);
+            case 'info2':
+                return renderInfoBlock(currentData?.info2_title, currentData?.info2_desc);
 
-    const getTpl = (tile, sel) => (tile.querySelector(sel)?.innerHTML || '').trim();
+            case 'project':
+            default:
+                return renderProject();
+        }
+    };
 
-    const openModal = (tile, view = 'project') => {
-        currentData = {
-            title: tile.dataset.title || '',
-            subtext: tile.dataset.subtext || '',
-            contact: tile.dataset.contact || '',
-            info1_title: tile.dataset.info1Title || '',
-            info2_title: tile.dataset.info2Title || '',
+    const updateModalContent = (view) => {
+        if (!currentData) return;
 
-            contact_desc: getTpl(tile, '.tpl-contact-desc'),
-            info1_desc:   getTpl(tile, '.tpl-info1-desc'),
-            info2_desc:   getTpl(tile, '.tpl-info2-desc'),
-            description:  getTpl(tile, '.tpl-description'),
-        };
-
+        currentView = view;
         modalTitle.textContent = currentData.title;
         modalSubtext.textContent = currentData.subtext;
+        modalDesc.innerHTML = renderView(view);
 
-        if (view === 'contact') modalDesc.innerHTML = renderContact();
-        else if (view === 'info1') modalDesc.innerHTML = renderInfo1();
-        else if (view === 'info2') modalDesc.innerHTML = renderInfo2();
-        else modalDesc.innerHTML = renderProject();
+        forceLinksTargetBlank(modalDesc);
+
+        setModalActionActive(view);
+    };
+
+    /* =========================================================
+     * Modal
+     * ========================================================= */
+    const openModal = (tile, view = 'project') => {
+        currentTile = tile;
+        currentData = buildTileData(tile);
+
+        updateModalContent(view);
 
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
 
-        currentTile = tile;
         setTileActive(tile, true);
     };
 
@@ -134,47 +170,85 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
+
         modalTitle.textContent = '';
         modalSubtext.textContent = '';
         modalDesc.innerHTML = '';
+
+        currentTile = null;
         currentData = null;
+        currentView = 'project';
 
         setTileActive(null, false);
-        currentTile = null;
+        setModalActionActive(null);
     };
 
-    // Fermer (backdrop + croix)
+    /* =========================================================
+     * Mapping actions / vues
+     * ========================================================= */
+    const getViewFromTileButtonIndex = (idx) => {
+        if (idx === 0) return 'contact';
+        if (idx === 1) return 'info1';
+        if (idx === 2) return 'info2';
+        return 'project';
+    };
+
+    const getViewFromModalAction = (action) => {
+        if (action === 'mailto') return 'contact';
+        if (action === 'open') return 'info1';
+        if (action === 'doc') return 'info2';
+        return 'project';
+    };
+
+    /* =========================================================
+     * Events modal
+     * ========================================================= */
     modal.addEventListener('click', (e) => {
-        if (e.target.closest('[data-close="1"]')) closeModal();
+        if (e.target.closest('[data-close="1"]')) {
+            closeModal();
+            return;
+        }
+
+        const actionBtn = e.target.closest('[data-modal-action]');
+        if (!actionBtn || !currentData) return;
+
+        const action = actionBtn.dataset.modalAction;
+        const view = getViewFromModalAction(action);
+
+        updateModalContent(view);
     });
 
-    // ESC
     window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+            closeModal();
+        }
     });
 
-    // Click sur tuile => ouvre la modal
+    /* =========================================================
+     * Events grid
+     * ========================================================= */
     grid.addEventListener('click', (e) => {
         const tile = e.target.closest('.project-tile');
         if (!tile) return;
 
-        // Détecter quel bouton (si click sur bouton)
         const btn = e.target.closest('.tile-btn');
         const buttons = btn ? Array.from(tile.querySelectorAll('.tile-btn')) : [];
         const idx = btn ? buttons.indexOf(btn) : -1;
 
-        // view par défaut
-        let view = 'project';
-        if (idx === 0) view = 'contact';
-        if (idx === 1) view = 'info1';
-        if (idx === 2) view = 'info2';
+        const view = getViewFromTileButtonIndex(idx);
 
         e.preventDefault();
 
-        // éviter double-clic si déjà ouvert sur la même tuile + même vue "project"
-        if (modal.classList.contains('is-open') && currentTile === tile && view === 'project') return;
+        if (
+            modal.classList.contains('is-open') &&
+            currentTile === tile &&
+            currentView === view
+        ) {
+            return;
+        }
 
         setTileLoading(tile, true);
+
         try {
             openModal(tile, view);
         } finally {
@@ -182,9 +256,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ===== Filtre catégories (toggle) =====
+    /* =========================================================
+     * Filtres catégories
+     * ========================================================= */
     const pills = Array.from(document.querySelectorAll('.cat-pill[data-category-id]'));
     const tiles = Array.from(document.querySelectorAll('.project-tile[data-category-ids]'));
+
+    let currentCategory = 'all';
 
     const setActivePill = (pill) => {
         pills.forEach(p => {
@@ -194,8 +272,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const showAll = () => {
-        tiles.forEach(t => (t.style.display = ''));
+    const showAllTiles = () => {
+        tiles.forEach(tile => {
+            tile.style.display = '';
+        });
     };
 
     const filterByCategoryId = (catId) => {
@@ -211,26 +291,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    let current = 'all';
-
     pills.forEach(pill => {
         pill.addEventListener('click', () => {
             const id = pill.dataset.categoryId;
 
-            // toggle: reclick sur la même => all
-            if (current === id) {
-                current = 'all';
+            if (currentCategory === id) {
+                currentCategory = 'all';
                 const allPill = pills.find(p => p.dataset.categoryId === 'all');
                 if (allPill) setActivePill(allPill);
-                showAll();
+                showAllTiles();
                 return;
             }
 
-            current = id;
+            currentCategory = id;
             setActivePill(pill);
 
-            if (id === 'all') showAll();
-            else filterByCategoryId(id);
+            if (id === 'all') {
+                showAllTiles();
+            } else {
+                filterByCategoryId(id);
+            }
         });
     });
 });

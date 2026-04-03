@@ -322,8 +322,11 @@ a.link:hover{text-decoration:underline;}
 .tox-tinymce{
     border-radius:12px !important;
     border:1px solid #d4d9df !important;
-    overflow:hidden;
-    height: 250px !important;
+    height: 320px !important;
+}
+
+.tox .tox-edit-area{
+    min-height: 260px;
 }
 
 
@@ -468,8 +471,9 @@ a.link:hover{text-decoration:underline;}
 .seg-track .seg-pane{
     flex:0 0 calc(100% / 3);
     width:calc(100% / 3);
-    margin-top:0; /* on gère l’espace via .seg-wrap */
-    padding:2px;  /* micro padding pour éviter "colle" sur les bords */
+    margin-top:0;
+    padding:2px;
+    overflow-y:auto;
 }
 
 /* Translate selon l’index */

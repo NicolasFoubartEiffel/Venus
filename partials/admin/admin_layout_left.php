@@ -38,10 +38,10 @@
                             Contact
                         </button>
                         <button type="button" class="seg-btn" role="tab" aria-selected="false" data-target="pane-info1">
-                            Info 1
+                            Liens utiles
                         </button>
                         <button type="button" class="seg-btn" role="tab" aria-selected="false" data-target="pane-info2">
-                            Info 2
+                            Ressources documentaires
                         </button>
                         <span class="seg-indicator" aria-hidden="true"></span>
                     </div>
@@ -53,8 +53,8 @@
                             <!-- Pane Contact -->
                             <div class="seg-pane is-active" id="pane-contact" role="tabpanel" aria-hidden="false">
                                 <div class="field">
-                                    <label for="project-contact">Contact</label>
-                                    <input type="text" name="contact" id="project-contact" required>
+                                    <label for="project-contact">Titre - Contact</label>
+                                    <input type="text" name="contact" id="project-contact">
                                 </div>
 
                                 <div class="field field-full">
@@ -66,8 +66,8 @@
                             <!-- Pane Info 1 -->
                             <div class="seg-pane" id="pane-info1" role="tabpanel" aria-hidden="true">
                                 <div class="field">
-                                    <label for="info_1_title">Information 1</label>
-                                    <input type="text" name="info_1_title" id="info_1_title" required>
+                                    <label for="info_1_title">Titre - Liens utile</label>
+                                    <input type="text" name="info_1_title" id="info_1_title">
                                 </div>
 
                                 <div class="field field-full">
@@ -79,8 +79,8 @@
                             <!-- Pane Info 2 -->
                             <div class="seg-pane" id="pane-info2" role="tabpanel" aria-hidden="true">
                                 <div class="field">
-                                    <label for="info_2_title">Information 2</label>
-                                    <input type="text" name="info_2_title" id="info_2_title" required>
+                                    <label for="info_2_title">Titre - Ressources documentaire</label>
+                                    <input type="text" name="info_2_title" id="info_2_title">
                                 </div>
 
                                 <div class="field field-full">

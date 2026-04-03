@@ -8,6 +8,18 @@
         <div class="modal-header">
             <div class="modal-title" id="modal-title"></div>
             <div class="modal-subtext" id="modal-subtext"></div>
+
+            <div class="modal-actions">
+                <button class="tile-btn" type="button" data-modal-action="mailto" aria-label="Contacter">
+                    <img src="assets/icons/mail_icon.png" alt="">
+                </button>
+                <button class="tile-btn" type="button" data-modal-action="open" aria-label="Ouvrir le lien">
+                    <img src="assets/icons/mail_link.png" alt="">
+                </button>
+                <button class="tile-btn" type="button" data-modal-action="doc" aria-label="Ouvrir la documentation">
+                    <img src="assets/icons/mail_doc.png" alt="">
+                </button>
+            </div>
         </div>
 
         <div class="modal-body">

@@ -105,14 +105,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 t.init({
                     selector: 'textarea.tinymce',
-                    height: 220,
+                    height: 320,
                     menubar: true,
                     branding: false,
+                    resize: true,
                     plugins:
-                        'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount autoresize code',
+                        'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount code',
                     toolbar:
                         'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat | code',
-                    autoresize_bottom_margin: 10,
+                    link_default_target: '_blank',
                     content_style: 'body { font-family: Segoe UI, sans-serif; font-size: 14px; }',
                 });
             };

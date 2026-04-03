@@ -15,8 +15,8 @@
 
     // titres de tooltip
     $titleContact = (trim($contact) === '' || strtolower(trim($contact)) === 'non renseigné') ? 'Non renseigné' : 'Contact';
-    $titleInfo1   = (trim($info1_t) === '' || strtolower(trim($info1_t)) === 'non renseigné') ? 'Non renseigné' : 'Information 1';
-    $titleInfo2   = (trim($info2_t) === '' || strtolower(trim($info2_t)) === 'non renseigné') ? 'Non renseigné' : 'Information 2';
+    $titleInfo1   = (trim($info1_t) === '' || strtolower(trim($info1_t)) === 'non renseigné') ? 'Non renseigné' : 'Liens utiles';
+    $titleInfo2   = (trim($info2_t) === '' || strtolower(trim($info2_t)) === 'non renseigné') ? 'Non renseigné' : 'Ressources Documentaires';
     ?>
 
     <article

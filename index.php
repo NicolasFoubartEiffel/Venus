@@ -8,16 +8,28 @@ $isAdmin = false;
 require_once 'partials/header.php';
 ?>
 
-<div class="category-selection" role="tablist" aria-label="Catégories">
-    <button type="button" class="cat-pill is-active" data-category-id="all" aria-selected="true">
-        Tout
-    </button>
-
-    <?php foreach ($categories as $category): ?>
-        <button type="button" class="cat-pill" data-category-id="<?= (int)$category['id'] ?>" aria-selected="false">
-            <?= htmlspecialchars($category['nom'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+<div class="category-bar">
+    <div class="category-selection" role="tablist" aria-label="Catégories">
+        <button type="button" class="cat-pill is-active" data-category-id="all" aria-selected="true">
+            Tout
         </button>
-    <?php endforeach; ?>
+
+        <?php foreach ($categories as $category): ?>
+            <button type="button" class="cat-pill" data-category-id="<?= (int)$category['id'] ?>" aria-selected="false">
+                <?= htmlspecialchars($category['nom'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+            </button>
+        <?php endforeach; ?>
+    </div>
+
+    <a href="https://view.genially.com/6698c94b454e30b004d2b7d1"
+       class="floating-calendar-btn"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Ouvrir le calendrier de formation dans un nouvel onglet"
+       title="Calendrier de formation">
+        <span class="floating-calendar-btn__icon">📅</span>
+        <span class="floating-calendar-btn__text">Calendrier de formation</span>
+    </a>
 </div>
 
 <div class="hint">
