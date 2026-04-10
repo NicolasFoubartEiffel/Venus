@@ -1,383 +1,507 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // =====================================================
-    // 0) Garde-fous + cache DOM (on évite de re-query partout)
-    // =====================================================
     const $ = (id) => document.getElementById(id);
-    const qs = (sel, root = document) => root.querySelector(sel);
-    const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+    const qs = (selector, root = document) => root.querySelector(selector);
+    const qsa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
     const form = $('create-project-form');
     if (!form) return;
 
-    const h2 = $('project-form-title');
+    const formTitle = $('project-form-title');
     const actionInput = $('project-action');
     const idInput = $('project-id');
     const submitBtn = $('project-submit-btn');
     const cancelBtn = $('project-cancel-btn');
 
-    const adminRight = qs('.admin-right') || document;
+    const adminLeft = qs('.admin-left');
+    const adminRight = qs('.admin-right');
 
-    // Catégories (checkbox)
-    const categoryCbs = qsa('#category-checkboxes input[type="checkbox"][name="category_ids[]"]');
+    const categoryCheckboxes = qsa('#category-checkboxes input[type="checkbox"][name="category_ids[]"]');
 
-    // =====================================================
-    // 1) Helpers Catégories
-    // =====================================================
-    const Categories = {
-        clear() {
-            categoryCbs.forEach((cb) => (cb.checked = false));
-        },
-        set(ids) {
-            const set = new Set((Array.isArray(ids) ? ids : []).map(String));
-            categoryCbs.forEach((cb) => (cb.checked = set.has(String(cb.value))));
-        },
-        hasOne() {
-            return !categoryCbs.length || categoryCbs.some((cb) => cb.checked);
-        },
+    const textFields = {
+        title: $('project-title'),
+        subtext: $('project-subtext'),
+        contact_title: $('project-contact'),
+        resources_title: $('resources-title'),
+        description_title: $('description-title'),
     };
 
-    // =====================================================
-    // 2) API helper (POST FormData -> JSON)
-    // =====================================================
-    const api = async (action, payload = {}) => {
-        const fd = new FormData();
-        fd.append('action', action);
+    const editorFields = {
+        contact_details: 'contact-details',
+        resources_details: 'resources-details',
+        description_details: 'description-details',
+        comments: 'comments',
+    };
 
-        for (const [k, v] of Object.entries(payload)) {
-            if (Array.isArray(v)) v.forEach((x) => fd.append(k, x));
-            else fd.append(k, v ?? '');
+    const segmented = qs('.segmented');
+    const segWrap = qs('.seg-wrap');
+
+    let currentMode = 'create';
+
+    function getTinyMCE() {
+        return window.tinymce || null;
+    }
+
+    function triggerTinySave() {
+        const tinymce = getTinyMCE();
+        if (tinymce?.triggerSave) {
+            tinymce.triggerSave();
+        }
+    }
+
+    function getEditor(id) {
+        const tinymce = getTinyMCE();
+        return tinymce ? tinymce.get(id) : null;
+    }
+
+    function setEditorContent(id, html = '') {
+        const textarea = $(id);
+        if (textarea) {
+            textarea.value = html;
         }
 
-        const res = await fetch('db/project.php', { method: 'POST', body: fd });
-        return res.json();
-    };
-
-    // Wrapper “safe” qui gère success/erreur + reload
-    const handle = async (promise, okMsg) => {
-        try {
-            const data = await promise;
-            if (!data?.success) throw new Error(data?.message || 'Inconnue');
-            alert(okMsg);
-            location.reload();
-        } catch (err) {
-            console.error(err);
-            alert('Erreur : ' + (err?.message || 'Serveur'));
+        const editor = getEditor(id);
+        if (editor) {
+            editor.setContent(html || '');
+            try {
+                editor.undoManager.clear();
+                editor.undoManager.reset();
+            } catch (_) {}
         }
-    };
+    }
 
-    // =====================================================
-    // 3) TinyMCE bridge (simplifié)
-    // =====================================================
-    const Tiny = (() => {
-        const tm = () => (window?.tinymce ? window.tinymce : null);
-        const editorReady = (ed) => !!(ed && ed.initialized && ed.undoManager);
+    function clearEditors() {
+        Object.values(editorFields).forEach((id) => setEditorContent(id, ''));
+    }
 
-        // Réessaie quelques fois de set le contenu si l’editor n’est pas encore prêt
-        const setWithRetry = (id, html, tries = 20) => {
-            const t = tm();
-            const val = html ?? '';
+    function repaintEditorsInPane(pane) {
+        if (!pane) return;
 
-            // Toujours sync la textarea (utile si Tiny absent)
-            const ta = $(id);
-            if (ta) ta.value = val;
+        pane.querySelectorAll('textarea.tinymce').forEach((textarea) => {
+            const editor = getEditor(textarea.id);
+            if (!editor) return;
 
-            if (!t) return; // Tiny pas chargé
+            try {
+                editor.execCommand('mceRepaint');
+            } catch (_) {}
+        });
+    }
 
-            const ed = t.get(id);
-            if (editorReady(ed)) {
-                try { ed.setContent(val); } catch (_) {}
-                try { ed.undoManager.clear?.(); } catch (_) {}
-                try { ed.undoManager.reset?.(); } catch (_) {}
+    function initTinyMCE() {
+        const tinymce = getTinyMCE();
+        if (!tinymce) return;
+
+        if (Array.isArray(tinymce.editors) && tinymce.editors.length > 0) {
+            return;
+        }
+
+        tinymce.init({
+            selector: 'textarea.tinymce',
+            height: 320,
+            menubar: true,
+            branding: false,
+            resize: true,
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount code',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat | code',
+            link_default_target: '_blank',
+            content_style: 'body { font-family: Segoe UI, sans-serif; font-size: 14px; }',
+            setup: (editor) => {
+                editor.on('init', () => {
+                    const activePane = qs('.seg-pane.is-active');
+                    if (activePane && activePane.contains(editor.getElement())) {
+                        try {
+                            editor.execCommand('mceRepaint');
+                        } catch (_) {}
+                    }
+                });
+            },
+        });
+    }
+
+    function bootTinyMCE() {
+        if (getTinyMCE()) {
+            initTinyMCE();
+            return;
+        }
+
+        let tries = 0;
+        const timer = setInterval(() => {
+            tries += 1;
+
+            if (getTinyMCE()) {
+                clearInterval(timer);
+                initTinyMCE();
                 return;
             }
 
-            if (tries <= 0) return;
-            setTimeout(() => setWithRetry(id, val, tries - 1), 80);
-        };
+            if (tries >= 60) {
+                clearInterval(timer);
+            }
+        }, 100);
+    }
 
-        const initWhenAvailable = () => {
-            const init = () => {
-                const t = tm();
-                if (!t) return;
-
-                // déjà initialisé
-                if (Array.isArray(t.editors) && t.editors.length) return;
-
-                t.init({
-                    selector: 'textarea.tinymce',
-                    height: 320,
-                    menubar: true,
-                    branding: false,
-                    resize: true,
-                    plugins:
-                        'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount code',
-                    toolbar:
-                        'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat | code',
-                    link_default_target: '_blank',
-                    content_style: 'body { font-family: Segoe UI, sans-serif; font-size: 14px; }',
-                });
-            };
-
-            init();
-            if (tm()) return;
-
-            // TinyMCE CDN peut arriver après : on “poll” 6s max
-            let tries = 0;
-            const maxTries = 60;
-            const timer = setInterval(() => {
-                tries++;
-                init();
-                if (tm() || tries >= maxTries) clearInterval(timer);
-            }, 100);
-        };
-
-        const setMany = (map) => {
-            for (const [id, html] of Object.entries(map)) setWithRetry(id, html);
-        };
-
-        const clearAll = () => {
-            qsa('textarea.tinymce').forEach((ta) => (ta.value = ''));
-
-            const t = tm();
-            if (!t?.editors) return;
-
-            t.editors.forEach((ed) => {
-                if (!editorReady(ed)) return;
-                try { ed.setContent(''); } catch (_) {}
-                try { ed.undoManager.clear?.(); } catch (_) {}
-                try { ed.undoManager.reset?.(); } catch (_) {}
-            });
-        };
-
-        const triggerSave = () => {
-            const t = tm();
-            try { t?.triggerSave?.(); } catch (_) {}
-        };
-
-        const repaintIn = (pane) => {
-            const t = tm();
-            if (!pane || !t) return;
-
-            pane.querySelectorAll('textarea.tinymce').forEach((ta) => {
-                const ed = t.get(ta.id);
-                if (!editorReady(ed)) return;
-                try { ed.execCommand?.('mceRepaint'); } catch (_) {}
-            });
-        };
-
-        return { initWhenAvailable, setMany, clearAll, triggerSave, repaintIn };
-    })();
-
-    Tiny.initWhenAvailable();
-
-    // =====================================================
-    // 4) Segmented tabs (Contact / Info1 / Info2) + SLIDE PANES
-    // - On ne met PLUS "hidden" sur les panes (sinon pas d'animation)
-    // - On sync data-active sur .segmented ET .seg-wrap (pour la track)
-    // =====================================================
-    const seg = qs('.segmented');
-    const segWrap = qs('.seg-wrap'); // wrapper du slider (ajouté dans ton HTML)
-
-    const Seg = (() => {
-        if (!seg) return { activate: () => {}, activePane: () => null };
-
-        const buttons = qsa('.seg-btn', seg);
-        const panes = buttons.map((b) => $(b.dataset.target)).filter(Boolean);
-
-        const activate = (idx) => {
-            // 1) indicateur du haut
-            seg.dataset.active = String(idx);
-
-            // 2) slider du dessous
-            if (segWrap) segWrap.dataset.active = String(idx);
-
-            // 3) boutons
-            buttons.forEach((b, i) => {
-                const on = i === idx;
-                b.classList.toggle('is-active', on);
-                b.setAttribute('aria-selected', on ? 'true' : 'false');
-                b.setAttribute('tabindex', on ? '0' : '-1');
-            });
-
-            // 4) panes (PAS DE hidden, on utilise aria-hidden)
-            panes.forEach((p, i) => {
-                const on = i === idx;
-                p.classList.toggle('is-active', on);
-                p.setAttribute('aria-hidden', on ? 'false' : 'true');
-            });
-
-            // TinyMCE aime pas trop les transitions/containers -> repaint après déplacement
-            setTimeout(() => Tiny.repaintIn(panes[idx]), 120);
-        };
-
-        buttons.forEach((btn, idx) => btn.addEventListener('click', () => activate(idx)));
-        activate(0);
-
-        return {
-            activate,
-            activePane: () => qs('.seg-pane.is-active'),
-        };
-    })();
-
-    // =====================================================
-    // 5) Mapping champs formulaire <-> objet projet
-    // =====================================================
-    const TEXT_FIELDS = [
-        ['project-title', 'title'],
-        ['project-subtext', 'subtext'],
-        ['project-contact', 'contact'],
-        ['info_1_title', 'info_1_title'],
-        ['info_2_title', 'info_2_title'],
-    ];
-
-    const HTML_FIELDS = {
-        'contact-description': 'contact_description',
-        'info-1-description': 'info_1_description',
-        'info-2-description': 'info_2_description',
-        'project-description': 'description',
-    };
-
-    const fillText = (project) => {
-        TEXT_FIELDS.forEach(([id, key]) => {
-            const el = $(id);
-            if (el) el.value = project?.[key] ?? '';
+    function clearCategories() {
+        categoryCheckboxes.forEach((checkbox) => {
+            checkbox.checked = false;
         });
-    };
+    }
 
-    const fillTiny = (project) => {
-        const map = {};
-        for (const [id, key] of Object.entries(HTML_FIELDS)) {
-            map[id] = project?.[key] ?? '';
+    function setCategories(ids = []) {
+        const selected = new Set((Array.isArray(ids) ? ids : []).map(String));
+
+        categoryCheckboxes.forEach((checkbox) => {
+            checkbox.checked = selected.has(String(checkbox.value));
+        });
+    }
+
+    function hasCategorySelected() {
+        if (!categoryCheckboxes.length) return true;
+        return categoryCheckboxes.some((checkbox) => checkbox.checked);
+    }
+
+    function activatePane(index) {
+        if (!segmented || !segWrap) return;
+
+        const buttons = qsa('.seg-btn', segmented);
+        const panes = buttons
+            .map((btn) => $(btn.dataset.target))
+            .filter(Boolean);
+
+        if (!buttons[index] || !panes[index]) return;
+
+        segmented.dataset.active = String(index);
+        segWrap.dataset.active = String(index);
+
+        buttons.forEach((btn, i) => {
+            const active = i === index;
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-selected', active ? 'true' : 'false');
+            btn.setAttribute('tabindex', active ? '0' : '-1');
+        });
+
+        panes.forEach((pane, i) => {
+            const active = i === index;
+            pane.classList.toggle('is-active', active);
+            pane.setAttribute('aria-hidden', active ? 'false' : 'true');
+        });
+
+        setTimeout(() => repaintEditorsInPane(panes[index]), 120);
+    }
+
+    function initSegmented() {
+        if (!segmented) return;
+
+        const buttons = qsa('.seg-btn', segmented);
+
+        buttons.forEach((btn, index) => {
+            btn.addEventListener('click', () => activatePane(index));
+        });
+
+        activatePane(0);
+    }
+
+    async function api(action, payload = {}) {
+        const formData = new FormData();
+        formData.append('action', action);
+
+        Object.entries(payload).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+                value.forEach((item) => formData.append(key, item));
+            } else {
+                formData.append(key, value ?? '');
+            }
+        });
+
+        const response = await fetch('db/project.php', {
+            method: 'POST',
+            body: formData,
+        });
+
+        let data;
+        try {
+            data = await response.json();
+        } catch (_) {
+            throw new Error('Réponse serveur invalide.');
         }
-        Tiny.setMany(map);
-        Tiny.repaintIn(Seg.activePane());
-    };
 
-    // =====================================================
-    // 6) Mode create / edit (1 seule fonction)
-    // =====================================================
-    const setMode = (mode, project = null) => {
-        const isEdit = mode === 'edit';
-
-        if (h2) h2.textContent = isEdit ? `Éditer : ${project?.title || ''}` : 'Ajouter un projet';
-        if (actionInput) actionInput.value = isEdit ? 'update_project' : 'create_projet';
-        if (idInput) idInput.value = isEdit ? project?.id || '' : '';
-
-        if (submitBtn) submitBtn.textContent = 'Sauvegarder';
-        if (cancelBtn) cancelBtn.style.display = isEdit ? 'inline-block' : 'none';
-
-        if (!isEdit) {
-            // reset complet
-            form.reset();
-            Categories.clear();
-            Tiny.clearAll();
-            Seg.activate(0);
-            return;
+        if (!response.ok) {
+            throw new Error(data?.message || 'Erreur serveur.');
         }
 
-        // remplir depuis l’objet projet
-        fillText(project);
-        Categories.set(project?.category_ids);
-        fillTiny(project);
-        Seg.activate(0);
-    };
+        if (!data?.success) {
+            throw new Error(data?.message || 'Erreur inconnue.');
+        }
 
-    // =====================================================
-    // 7) Accordéon (cards) + edit/delete via event delegation
-    // =====================================================
-    const closeCard = (card) => {
-        const gache = qs('.card-gache', card);
+        return data;
+    }
+
+    function scrollToForm() {
+        const target = adminLeft || form;
+
+        target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+        });
+    }
+
+    function focusFormTitle() {
+        const titleInput = $('project-title');
+        if (!titleInput) return;
+
+        setTimeout(() => {
+            titleInput.focus();
+            titleInput.select?.();
+        }, 350);
+    }
+
+    function fillTextFields(project = {}) {
+        Object.entries(textFields).forEach(([key, element]) => {
+            if (!element) return;
+            element.value = project[key] ?? '';
+        });
+    }
+
+    function fillEditorFields(project = {}) {
+        Object.entries(editorFields).forEach(([key, editorId]) => {
+            setEditorContent(editorId, project[key] ?? '');
+        });
+    }
+
+    function resetFormCompletely() {
+        form.reset();
+        clearCategories();
+        clearEditors();
+        activatePane(0);
+
+        if (idInput) idInput.value = '';
+        if (actionInput) actionInput.value = 'create_project';
+
+        currentMode = 'create';
+
+        if (formTitle) {
+            formTitle.textContent = 'Ajouter un projet';
+        }
+
+        if (submitBtn) {
+            submitBtn.textContent = 'Sauvegarder';
+            submitBtn.disabled = false;
+        }
+
+        if (cancelBtn) {
+            cancelBtn.style.display = 'none';
+        }
+    }
+
+    function setCreateMode({ scroll = false, focus = false } = {}) {
+        resetFormCompletely();
+
+        if (scroll) {
+            scrollToForm();
+        }
+
+        if (focus) {
+            focusFormTitle();
+        }
+    }
+
+    function setEditMode(project) {
+        currentMode = 'edit';
+
+        if (formTitle) {
+            formTitle.textContent = `Modifier : ${project?.title || ''}`;
+        }
+
+        if (actionInput) {
+            actionInput.value = 'update_project';
+        }
+
+        if (idInput) {
+            idInput.value = project?.id ?? '';
+        }
+
+        if (submitBtn) {
+            submitBtn.textContent = 'Mettre à jour';
+            submitBtn.disabled = false;
+        }
+
+        if (cancelBtn) {
+            cancelBtn.style.display = 'inline-flex';
+        }
+
+        fillTextFields(project);
+        setCategories(project?.category_ids ?? []);
+        fillEditorFields(project);
+        activatePane(0);
+
+        scrollToForm();
+        focusFormTitle();
+    }
+
+    function closeCard(card) {
+        if (!card) return;
+
+        const button = qs('.card-gache', card);
         const body = qs('.card-body', card);
+
         card.classList.remove('is-open');
         card.classList.add('is-collapsed');
-        gache?.setAttribute('aria-expanded', 'false');
-        if (body) body.hidden = true;
-    };
 
-    const openCard = (card) => {
-        const gache = qs('.card-gache', card);
+        if (button) {
+            button.setAttribute('aria-expanded', 'false');
+        }
+
+        if (body) {
+            body.hidden = true;
+        }
+    }
+
+    function openCard(card) {
+        if (!card) return;
+
+        const button = qs('.card-gache', card);
         const body = qs('.card-body', card);
+
         card.classList.add('is-open');
         card.classList.remove('is-collapsed');
-        gache?.setAttribute('aria-expanded', 'true');
-        if (body) body.hidden = false;
-    };
 
-    const closeAllCards = () => qsa('.project-card.is-open').forEach(closeCard);
+        if (button) {
+            button.setAttribute('aria-expanded', 'true');
+        }
 
-    adminRight.addEventListener('click', async (e) => {
-        // Toggle accordéon
-        const gacheBtn = e.target.closest('.project-card .card-gache');
-        if (gacheBtn) {
-            const card = gacheBtn.closest('.project-card');
-            const isOpen = card.classList.contains('is-open');
+        if (body) {
+            body.hidden = false;
+        }
+    }
+
+    function closeAllCards() {
+        qsa('.project-card.is-open').forEach(closeCard);
+    }
+
+    async function handleEdit(projectId) {
+        try {
+            const data = await api('get_project', { id: projectId });
+            setEditMode(data.project);
+
+            const relatedCard = qs(`.project-card[data-project-id="${String(projectId)}"]`);
+            if (relatedCard) {
+                closeAllCards();
+                openCard(relatedCard);
+            }
+        } catch (error) {
+            console.error(error);
+            alert(error.message || 'Impossible de charger le projet.');
+        }
+    }
+
+    async function handleDelete(projectId, button) {
+        const confirmed = confirm('Supprimer ce projet ?');
+        if (!confirmed) return;
+
+        try {
+            await api('delete_project', { id: projectId });
+
+            const card = button.closest('.project-card');
+            if (card) {
+                card.remove();
+            }
+
+            if (String(idInput?.value || '') === String(projectId)) {
+                setCreateMode({ scroll: true, focus: true });
+            }
+
+            alert('Projet supprimé.');
+        } catch (error) {
+            console.error(error);
+            alert(error.message || 'Impossible de supprimer le projet.');
+        }
+    }
+
+    adminRight?.addEventListener('click', async (event) => {
+        const accordionButton = event.target.closest('.project-card .card-gache');
+        if (accordionButton) {
+            const card = accordionButton.closest('.project-card');
+            const isOpen = card?.classList.contains('is-open');
+
             closeAllCards();
-            if (!isOpen) openCard(card);
+            if (!isOpen) {
+                openCard(card);
+            }
             return;
         }
 
-        // Supprimer
-        const delBtn = e.target.closest('.project-card .delete-btn');
-        if (delBtn) {
-            e.stopPropagation();
-            if (!confirm('Supprimer ce projet ?')) return;
-            return handle(api('delete_project', { id: delBtn.dataset.id }), 'Projet supprimé');
+        const editButton = event.target.closest('.project-card .edit-btn');
+        if (editButton) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const projectId = editButton.dataset.id;
+            if (!projectId) return;
+
+            await handleEdit(projectId);
+            return;
         }
 
-        // Éditer
-        const editBtn = e.target.closest('.project-card .edit-btn');
-        if (editBtn) {
-            e.stopPropagation();
-            const id = editBtn.dataset.id;
+        const deleteButton = event.target.closest('.project-card .delete-btn');
+        if (deleteButton) {
+            event.preventDefault();
+            event.stopPropagation();
 
-            try {
-                const data = await api('get_project', { id });
-                if (!data?.success) throw new Error(data?.message || 'Inconnue');
+            const projectId = deleteButton.dataset.id;
+            if (!projectId) return;
 
-                setMode('edit', data.project);
-
-                const card = qs(`.project-card[data-project-id="${CSS.escape(String(id))}"]`);
-                if (card) {
-                    closeAllCards();
-                    openCard(card);
-                }
-
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } catch (err) {
-                console.error(err);
-                alert('Erreur : ' + (err?.message || 'Serveur'));
-            }
+            await handleDelete(projectId, deleteButton);
         }
     });
 
-    // =====================================================
-    // 8) Submit / Cancel
-    // =====================================================
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
 
-        // validation simple
-        if (!Categories.hasOne()) {
+        if (!hasCategorySelected()) {
             alert('Choisis au moins une catégorie.');
             return;
         }
 
-        // TinyMCE -> copie le contenu HTML dans les <textarea>
-        Tiny.triggerSave();
+        triggerTinySave();
 
-        // FormData direct (le plus fiable)
-        const fd = new FormData(form);
+        const formData = new FormData(form);
 
-        handle(
-            fetch('db/project.php', { method: 'POST', body: fd }).then((r) => r.json()),
-            actionInput?.value === 'update_project' ? 'Projet modifié' : 'Projet créé'
-        );
+        if (submitBtn) {
+            submitBtn.disabled = true;
+        }
+
+        try {
+            const response = await fetch('db/project.php', {
+                method: 'POST',
+                body: formData,
+            });
+
+            let data;
+            try {
+                data = await response.json();
+            } catch (_) {
+                throw new Error('Réponse serveur invalide.');
+            }
+
+            if (!response.ok || !data?.success) {
+                throw new Error(data?.message || 'Erreur serveur.');
+            }
+
+            alert(currentMode === 'edit' ? 'Projet modifié.' : 'Projet créé.');
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            alert(error.message || 'Impossible de sauvegarder le projet.');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
+        }
     });
 
-    cancelBtn?.addEventListener('click', () => setMode('create'));
+    cancelBtn?.addEventListener('click', () => {
+        setCreateMode({ scroll: true, focus: true });
+    });
 
-    // =====================================================
-    // 9) Init
-    // =====================================================
-    setMode('create');
+    bootTinyMCE();
+    initSegmented();
+    setCreateMode();
 });

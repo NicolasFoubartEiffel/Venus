@@ -110,6 +110,13 @@ body{
 /* =========================
    ACTIONS
 ========================= */
+.tile-btn.is-disabled,
+[data-modal-action].is-disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    pointer-events: auto;
+}
+
 .tile-actions{
     display: flex;
     gap: 10px;

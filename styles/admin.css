@@ -1,4 +1,7 @@
-/* ===== BASE ===== */
+/* ===================================================== */
+/* ===== BASE ========================================== */
+/* ===================================================== */
+
 *{box-sizing:border-box;}
 
 body{
@@ -9,25 +12,49 @@ body{
     padding:2rem;
 }
 
-h1,h2{color:#2c3e50;margin:0 0 14px;}
+h1,h2{
+    color:#2c3e50;
+    margin:0 0 14px;
+}
 
 nav{margin-bottom:1.5rem;}
-nav a{color:#3498db;text-decoration:none;margin-right:1rem;}
+
+nav a{
+    color:#3498db;
+    text-decoration:none;
+    margin-right:1rem;
+}
+
 nav a:hover{text-decoration:underline;}
 
 
-/* ===== LAYOUT ===== */
-.admin-layout{display:flex;gap:2rem;align-items:stretch;}
-.admin-left,.admin-right{flex:1;min-width:0;}
+/* ===================================================== */
+/* ===== LAYOUT ======================================== */
+/* ===================================================== */
+
+.admin-layout{
+    display:flex;
+    gap:2rem;
+    align-items:flex-start;
+}
+
+.admin-left,
+.admin-right{
+    flex:1;
+    min-width:0;
+}
 
 @media(max-width:900px){
     body{padding:1rem;}
-    .admin-layout{flex-direction:column;}
+
+    .admin-layout{
+        flex-direction:column;
+    }
 }
 
 
 /* ===================================================== */
-/* ===== SURFACES / PANELS (factorisé) ================== */
+/* ===== SURFACES / PANELS ============================== */
 /* ===================================================== */
 
 .project-form,
@@ -44,7 +71,6 @@ nav a:hover{text-decoration:underline;}
     padding:1.4rem;
 }
 
-/* project-card garde son layout accordéon */
 .project-card{
     border-left:5px solid #3498db;
     margin-bottom:12px;
@@ -54,18 +80,18 @@ nav a:hover{text-decoration:underline;}
 
 
 /* ===================================================== */
-/* ===== INPUTS (factorisé) ============================= */
+/* ===== FORM ELEMENTS ================================= */
 /* ===================================================== */
 
 :is(input[type="text"],input[type="date"],textarea,select){
     width:100%;
-    padding:.6rem .7rem;
-    margin:4px 0 14px;
+    padding:.65rem .75rem;
     border:1px solid #d4d9df;
     border-radius:10px;
     background:#fff;
     font-size:14px;
     outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
 }
 
 :is(input[type="text"],input[type="date"],textarea,select):focus{
@@ -73,11 +99,127 @@ nav a:hover{text-decoration:underline;}
     box-shadow:0 0 0 3px rgba(52,152,219,.15);
 }
 
-textarea{min-height:250px;resize:vertical;}
+textarea{
+    min-height:250px;
+    resize:vertical;
+}
 
 
 /* ===================================================== */
-/* ===== CATEGORY CHECKBOXES (pills) ==================== */
+/* ===== BOUTONS ======================================= */
+/* ===================================================== */
+
+button{
+    padding:.55rem .9rem;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.15s;
+    color:#fff;
+}
+
+button:hover{filter:brightness(.95);}
+button:active{transform:translateY(1px);}
+
+.btn-primary{background:#2ecc71;}
+.btn-ghost{
+    background:#eef1f4;
+    color:#2c3e50;
+}
+.btn-ghost:hover{filter:brightness(.98);}
+
+.edit-btn{
+    background:#3498db;
+    font-size:13px;
+    padding:.45rem .75rem;
+}
+
+.delete-btn{
+    background:#9f4343;
+    font-size:13px;
+}
+
+
+/* ===================================================== */
+/* ===== FORMULAIRE GAUCHE ============================== */
+/* ===================================================== */
+
+.admin-left .project-form{
+    position:sticky;
+    top:16px;
+}
+
+.admin-left h2{
+    font-size:18px;
+    margin-bottom:14px;
+}
+
+
+/* ===================================================== */
+/* ===== FORM UI ======================================= */
+/* ===================================================== */
+
+.project-form-ui .form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+    border:1px solid #eef1f4;
+    border-radius:14px;
+    overflow:hidden;
+    background:#fff;
+}
+
+.project-form-ui .form-grid > .field,
+.project-form-ui .form-grid > fieldset.field{
+    padding:14px;
+    border-bottom:1px solid #f0f3f6;
+    min-width:0;
+}
+
+.project-form-ui .form-grid > .field:nth-child(odd),
+.project-form-ui .form-grid > fieldset.field:nth-child(odd){
+    background:#fcfdff;
+}
+
+.project-form-ui .field-full{
+    grid-column:1 / -1;
+}
+
+.project-form-ui label,
+.project-form-ui legend{
+    display:block;
+    margin:0 0 6px;
+    font-weight:700;
+    font-size:13px;
+    color:#2c3e50;
+}
+
+.project-form-ui :is(input[type="text"], textarea, select){
+    margin:0;
+}
+
+.project-form-ui .field textarea{
+    margin:0;
+}
+
+@media(max-width:800px){
+    .project-form-ui .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .project-form-ui .field-full{
+        grid-column:auto;
+    }
+
+    .project-form-ui .form-grid > .field:nth-child(odd),
+    .project-form-ui .form-grid > fieldset.field:nth-child(odd){
+        background:transparent;
+    }
+}
+
+
+/* ===================================================== */
+/* ===== CATEGORY CHECKBOXES ============================ */
 /* ===================================================== */
 
 #category-checkboxes{
@@ -88,6 +230,13 @@ textarea{min-height:250px;resize:vertical;}
     background:#fbfcfd;
 }
 
+.project-form-ui #category-checkboxes{
+    border:none;
+    border-radius:0;
+    padding:0;
+    background:transparent;
+}
+
 #category-checkboxes legend{
     padding:0 8px;
     font-weight:700;
@@ -95,14 +244,17 @@ textarea{min-height:250px;resize:vertical;}
     font-size:13px;
 }
 
+.project-form-ui #category-checkboxes legend{
+    padding:0;
+    margin-bottom:10px;
+}
+
 .cat-grid{
     display:flex;
     flex-wrap:wrap;
     gap:10px;
-    margin-top:10px;
 }
 
-/* base pill partagé avec .chip */
 .cat-check,
 .chip{
     border-radius:999px;
@@ -121,12 +273,14 @@ textarea{min-height:250px;resize:vertical;}
     cursor:pointer;
     user-select:none;
     padding:8px 12px;
+    transition:background .15s ease, border-color .15s ease, color .15s ease;
 }
 
 .cat-check input{
     width:16px;
     height:16px;
     margin:0;
+    accent-color:#2f2f86;
 }
 
 .cat-check:has(input:checked){
@@ -139,34 +293,186 @@ textarea{min-height:250px;resize:vertical;}
 
 
 /* ===================================================== */
-/* ===== BUTTONS (factorisé) ============================ */
+/* ===== SEGMENTED CONTROL ============================== */
 /* ===================================================== */
 
-button{
-    padding:.55rem .9rem;
-    border:none;
-    border-radius:10px;
+.segmented{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    padding:4px;
+    border:1px solid rgba(47,47,134,.2);
+    border-radius:999px;
+    background:#f6f8fb;
+    gap:0;
+}
+
+.seg-btn{
+    position:relative;
+    z-index:1;
+    border:0;
+    background:transparent;
+    padding:10px 12px;
+    border-radius:999px;
     cursor:pointer;
-    transition:.15s;
-    background:#2ecc71;
+    font-weight:700;
+    font-size:13px;
+    color:#2f2f86;
+    text-align:center;
+}
+
+.seg-btn:focus{
+    outline:none;
+    box-shadow:0 0 0 3px rgba(47,47,134,.18);
+}
+
+.seg-btn.is-active{
     color:#fff;
 }
 
-button:hover{filter:brightness(.95);}
-button:active{transform:translateY(1px);}
+.seg-indicator{
+    position:absolute;
+    top:4px;
+    bottom:4px;
+    left:4px;
+    width:calc((100% - 8px) / 3);
+    border-radius:999px;
+    background:#2f2f86;
+    transition:transform .2s ease;
+}
 
-.edit-btn{background:#3498db;font-size:13px;padding:.45rem .75rem;}
-.delete-btn{background:#9f4343;font-size:13px;}
+.segmented[data-active="0"] .seg-indicator{transform:translateX(0);}
+.segmented[data-active="1"] .seg-indicator{transform:translateX(100%);}
+.segmented[data-active="2"] .seg-indicator{transform:translateX(200%);}
 
-.btn-primary{background:#2ecc71;}
-.btn-ghost{background:#eef1f4;color:#2c3e50;}
-.btn-ghost:hover{filter:brightness(.98);}
+@media(max-width:640px){
+    .segmented{
+        grid-template-columns:1fr;
+        border-radius:16px;
+        padding:6px;
+        gap:6px;
+    }
+
+    .seg-indicator{
+        display:none;
+    }
+
+    .seg-btn{
+        border-radius:12px;
+        color:#2f2f86;
+        background:transparent;
+    }
+
+    .seg-btn.is-active{
+        background:#2f2f86;
+        color:#fff;
+    }
+}
 
 
 /* ===================================================== */
-/* ===== LIST ===== */
-.project-columns-admin{display:flex;flex-wrap:wrap;gap:1rem;}
-.project-column{flex:1;background:transparent;border:none;padding:0;}
+/* ===== ZONE DES PANES ================================= */
+/* ===================================================== */
+
+.seg-wrap{
+    margin-top:14px;
+}
+
+.seg-track{
+    display:block;
+    width:100%;
+}
+
+.seg-pane{
+    display:none;
+    border:1px solid #eef1f4;
+    border-radius:14px;
+    background:#fbfcfd;
+    padding:14px;
+}
+
+.seg-pane.is-active{
+    display:block;
+}
+
+.seg-pane .field{
+    padding:0;
+    border:none;
+    background:transparent;
+}
+
+.seg-pane .field + .field{
+    margin-top:14px;
+}
+
+.seg-pane .field-full{
+    grid-column:auto;
+}
+
+
+/* ===================================================== */
+/* ===== TEXTAREAS / TINYMCE ============================ */
+/* ===================================================== */
+
+.textarea-sm{min-height:250px;}
+.textarea-lg{min-height:250px;}
+
+.tox-tinymce{
+    border-radius:12px !important;
+    border:1px solid #d4d9df !important;
+    overflow:hidden !important;
+}
+
+.tox .tox-edit-area{
+    min-height:260px;
+}
+
+.tox.tox-tinymce:focus-within{
+    box-shadow:0 0 0 3px rgba(52,152,219,.15) !important;
+    border-color:#3498db !important;
+}
+
+
+/* ===================================================== */
+/* ===== ACTIONS STICKY ================================ */
+/* ===================================================== */
+
+.form-actions{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+.form-actions--sticky{
+    position:sticky;
+    bottom:0;
+    margin-top:14px;
+    padding:12px 14px;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(6px);
+    border:1px solid #eef1f4;
+    border-radius:14px;
+    box-shadow:0 -6px 18px rgba(0,0,0,.06);
+}
+
+
+/* ===================================================== */
+/* ===== LISTE ADMIN =================================== */
+/* ===================================================== */
+
+.project-columns-admin{
+    display:flex;
+    flex-wrap:wrap;
+    gap:1rem;
+}
+
+.project-column{
+    flex:1;
+    background:transparent;
+    border:none;
+    padding:0;
+}
 
 
 /* ===================================================== */
@@ -188,7 +494,10 @@ button:active{transform:translateY(1px);}
 
 .card-gache:hover{background:#f6f8fb;}
 
-.gache-left{flex:1;min-width:0;}
+.gache-left{
+    flex:1;
+    min-width:0;
+}
 
 .gache-left .title{
     font-size:16px;
@@ -210,16 +519,33 @@ button:active{transform:translateY(1px);}
     transition:transform .2s ease;
 }
 
-.project-card.is-open .chevron{transform:rotate(180deg);}
+.project-card.is-open .chevron{
+    transform:rotate(180deg);
+}
 
 .card-body{
     padding:14px 16px 16px;
     border-top:1px solid #eef1f4;
 }
+
 .card-body[hidden]{display:none;}
 
+@media(max-width:900px){
+    .card-gache{
+        flex-direction:column;
+        align-items:flex-start;
+    }
 
-/* ===== CARD TEXT ===== */
+    .gache-right{
+        justify-content:flex-start;
+    }
+}
+
+
+/* ===================================================== */
+/* ===== TEXTES CARDS ================================== */
+/* ===================================================== */
+
 .card-section{margin-top:12px;}
 
 .label{
@@ -229,11 +555,21 @@ button:active{transform:translateY(1px);}
     margin-bottom:4px;
 }
 
-.value{font-size:14px;color:#374151;}
-.muted{font-size:13px;color:#6b7280;}
+.value{
+    font-size:14px;
+    color:#374151;
+}
+
+.muted{
+    font-size:13px;
+    color:#6b7280;
+}
 
 
-/* ===== GRID ===== */
+/* ===================================================== */
+/* ===== GRID / CHIPS / LINKS ========================== */
+/* ===================================================== */
+
 .grid-2{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -244,17 +580,24 @@ button:active{transform:translateY(1px);}
     .grid-2{grid-template-columns:1fr;}
 }
 
+.chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
 
-/* ===== CATEGORY CHIPS ===== */
-.chips{display:flex;flex-wrap:wrap;gap:8px;}
+a.link{
+    color:#3498db;
+    text-decoration:none;
+}
 
-
-/* ===== LINKS ===== */
-a.link{color:#3498db;text-decoration:none;}
 a.link:hover{text-decoration:underline;}
 
 
-/* ===== WYSIWYG ===== */
+/* ===================================================== */
+/* ===== WYSIWYG ======================================= */
+/* ===================================================== */
+
 .wysiwyg,
 .wysiwyg--compact{
     border:1px solid #eef1f4;
@@ -279,7 +622,10 @@ a.link:hover{text-decoration:underline;}
 }
 
 
-/* ===== ACTIONS ===== */
+/* ===================================================== */
+/* ===== ACTIONS CARD ================================== */
+/* ===================================================== */
+
 .card-actions{
     display:flex;
     justify-content:flex-end;
@@ -290,208 +636,8 @@ a.link:hover{text-decoration:underline;}
 }
 
 
-/* Responsive accordéon */
-@media(max-width:900px){
-    .card-gache{
-        flex-direction:column;
-        align-items:flex-start;
-    }
-    .gache-right{justify-content:flex-start;}
-}
-
-
 /* ===================================================== */
-/* ===== FORMULAIRE GAUCHE (admin-left) ================= */
-/* ===================================================== */
-
-.admin-left .project-form{
-    position:sticky;
-    top:16px;
-}
-
-.admin-left h2{
-    font-size:18px;
-    margin-bottom:14px;
-}
-
-/* Textareas tailles */
-.textarea-sm{min-height:250px;}
-.textarea-lg{min-height:250px;}
-
-/* TinyMCE harmonisation */
-.tox-tinymce{
-    border-radius:12px !important;
-    border:1px solid #d4d9df !important;
-    height: 320px !important;
-}
-
-.tox .tox-edit-area{
-    min-height: 260px;
-}
-
-
-/* ===================================================== */
-/* ===== FORM UI : séparateurs + actions sticky ========= */
-/* ===================================================== */
-
-.project-form-ui .form-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:0;
-    border:1px solid #eef1f4;
-    border-radius:14px;
-    overflow:hidden;
-    background:#fff;
-}
-
-.project-form-ui .form-grid > .field,
-.project-form-ui .form-grid > fieldset.field{
-    padding:12px 14px;
-    border-bottom:1px solid #f0f3f6;
-}
-
-.project-form-ui .form-grid > .field:last-child,
-.project-form-ui .form-grid > fieldset.field:last-child{
-    border-bottom:none;
-}
-
-.project-form-ui .field-full{grid-column:1 / -1;}
-
-.project-form-ui .form-grid > .field:nth-child(odd),
-.project-form-ui .form-grid > fieldset.field:nth-child(odd){
-    background:#fcfdff;
-}
-
-.project-form-ui :is(input[type="text"], textarea, select){margin:0;}
-
-.project-form-ui label,
-.project-form-ui legend{
-    display:block;
-    margin:0 0 6px;
-    font-weight:700;
-    font-size:13px;
-    color:#2c3e50;
-}
-
-.project-form-ui #category-checkboxes{
-    border:none;
-    border-radius:0;
-    padding:12px 0 0;
-    background:transparent;
-}
-
-.project-form-ui #category-checkboxes legend{padding:0;}
-
-/* Actions sticky */
-.form-actions--sticky{
-    position:sticky;
-    bottom:0;
-    margin-top:14px;
-    padding:12px 14px;
-    background:rgba(255,255,255,.92);
-    backdrop-filter:blur(6px);
-    border:1px solid #eef1f4;
-    border-radius:14px;
-    display:flex;
-    gap:10px;
-    justify-content:flex-start;
-    align-items:center;
-    box-shadow:0 -6px 18px rgba(0,0,0,.06);
-}
-
-
-/* ===================================================== */
-/* ===== SEGMENTED CONTROL (Contact / Info1 / Info2) ==== */
-/* ===================================================== */
-
-.segmented{
-    position:relative;
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    padding:4px;
-    border:1px dashed rgba(47,47,134,.35);
-    border-radius:999px;
-    background:#fff;
-}
-
-.seg-btn{
-    position:relative;
-    z-index:1;
-    border:0;
-    background:transparent;
-    padding:10px 12px;
-    border-radius:999px;
-    cursor:pointer;
-    font-weight:700;
-    font-size:13px;
-    color:#2f2f86;
-}
-
-.seg-btn:focus{
-    outline:none;
-    box-shadow:0 0 0 3px rgba(47,47,134,.18);
-}
-
-.seg-btn.is-active{color:#fff;}
-
-.seg-indicator{
-    position:absolute;
-    top:4px;
-    bottom:4px;
-    left:4px;
-    width:calc((100% - 8px) / 3);
-    border-radius:999px;
-    background:#2f2f86;
-    transition:transform .18s ease;
-}
-
-.segmented[data-active="0"] .seg-indicator{transform:translateX(0);}
-.segmented[data-active="1"] .seg-indicator{transform:translateX(100%);}
-.segmented[data-active="2"] .seg-indicator{transform:translateX(200%);}
-
-/* ===================================================== */
-/* ===== PANES SLIDER (glisse le bloc du dessous) ======= */
-/* ===================================================== */
-
-.seg-wrap{
-    margin-top:12px;
-    overflow:hidden;
-    border-radius:14px;
-}
-
-/* Track qui coulisse */
-.seg-track{
-    display:flex;
-    width:300%;
-    transition:transform .22s ease;
-    will-change:transform;
-}
-
-/* Chaque pane fait 1/3 de la track */
-.seg-track .seg-pane{
-    flex:0 0 calc(100% / 3);
-    width:calc(100% / 3);
-    margin-top:0;
-    padding:2px;
-    overflow-y:auto;
-}
-
-/* Translate selon l’index */
-.seg-wrap[data-active="0"] .seg-track{transform:translateX(0%);}
-.seg-wrap[data-active="1"] .seg-track{transform:translateX(-33.3333%);}
-.seg-wrap[data-active="2"] .seg-track{transform:translateX(-66.6666%);}
-
-/* Petit fade doux (optionnel, joli) */
-.seg-track .seg-pane{
-    opacity:1;
-    transition:opacity .18s ease;
-}
-.seg-wrap[data-active="0"] #pane-contact{opacity:1;}
-.seg-wrap[data-active="1"] #pane-info1{opacity:1;}
-.seg-wrap[data-active="2"] #pane-info2{opacity:1;}
-
-/* ===================================================== */
-/* ===== CARD : nouveau layout "info strip" ============ */
+/* ===== CARD : INFO STRIP ============================== */
 /* ===================================================== */
 
 .card-subtext{
@@ -570,7 +716,11 @@ a.link:hover{text-decoration:underline;}
     word-break:break-word;
 }
 
-.info-link{color:#3498db;text-decoration:none;}
+.info-link{
+    color:#3498db;
+    text-decoration:none;
+}
+
 .info-link:hover{text-decoration:underline;}
 
 .info-desc{
@@ -581,12 +731,59 @@ a.link:hover{text-decoration:underline;}
 .info-desc:after{
     content:"";
     position:absolute;
-    left:0; right:0; bottom:0;
+    left:0;
+    right:0;
+    bottom:0;
     height:26px;
     pointer-events:none;
 }
 
-/* Responsive */
 @media(max-width:900px){
-    .info-strip{grid-template-columns:1fr;}
+    .info-strip{
+        grid-template-columns:1fr;
+    }
+}
+
+.title-comment-icon{
+    display:inline-block;
+    font-size:.95em;
+    vertical-align:middle;
+}
+
+.comments-box{
+    margin:6px 0 14px;
+    border:1px solid #eef1f4;
+    border-radius:14px;
+    background:#fff;
+    padding:10px 12px;
+}
+
+.comments-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:8px;
+}
+
+.comments-ico{
+    width:28px;
+    height:28px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:10px;
+    background:rgba(47,47,134,.07);
+    border:1px solid rgba(47,47,134,.14);
+    font-size:14px;
+}
+
+.comments-label{
+    font-weight:800;
+    font-size:12px;
+    color:#2c3e50;
+}
+
+.comments-body{
+    overflow:hidden;
+    position:relative;
 }

@@ -6,18 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTitle = document.getElementById('modal-title');
     const modalSubtext = document.getElementById('modal-subtext');
     const modalDesc = document.getElementById('modal-description');
-    const modalActionButtons = Array.from(
-        document.querySelectorAll('[data-modal-action]')
-    );
-
-    const forceLinksTargetBlank = (container) => {
-        if (!container) return;
-
-        container.querySelectorAll('a').forEach(link => {
-            link.setAttribute('target', '_blank');
-            link.setAttribute('rel', 'noopener noreferrer');
-        });
-    };
+    const modalActionButtons = Array.from(document.querySelectorAll('[data-modal-action]'));
 
     if (!modal || !modalTitle || !modalSubtext || !modalDesc) return;
 
@@ -25,115 +14,183 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentData = null;
     let currentView = 'project';
 
-    /* =========================================================
-     * Helpers UI
-     * ========================================================= */
-    const setTileLoading = (tile, on) => {
-        if (!tile) return;
-        tile.classList.toggle('is-loading', !!on);
-    };
+    const hasContent = (value) => String(value || '').trim() !== '';
 
-    const setTileActive = (tile, on) => {
-        document.querySelectorAll('.project-tile.is-active')
-            .forEach(t => t.classList.remove('is-active'));
+    const forceLinksTargetBlank = (container) => {
+        if (!container) return;
 
-        if (tile && on) {
-            tile.classList.add('is-active');
-        }
-    };
-
-    const setModalActionActive = (view) => {
-        const map = {
-            contact: 'mailto',
-            info1: 'open',
-            info2: 'doc',
-        };
-
-        modalActionButtons.forEach(btn => {
-            const action = btn.dataset.modalAction;
-            const isActive = map[view] === action;
-            btn.classList.toggle('is-active', isActive);
-            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        container.querySelectorAll('a').forEach((link) => {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
         });
     };
 
-    /* =========================================================
-     * Helpers contenu
-     * ========================================================= */
     const getTpl = (tile, selector) =>
         (tile.querySelector(selector)?.innerHTML || '').trim();
+
+    const renderMuted = (text) => `<span class="muted">${text}</span>`;
+    const renderEmptyBlock = () => '<span class="muted"><em>Non renseigné</em></span>';
 
     const buildTileData = (tile) => ({
         title: tile.dataset.title || '',
         subtext: tile.dataset.subtext || '',
-        contact: tile.dataset.contact || '',
-        info1_title: tile.dataset.info1Title || '',
-        info2_title: tile.dataset.info2Title || '',
 
-        contact_desc: getTpl(tile, '.tpl-contact-desc'),
-        info1_desc: getTpl(tile, '.tpl-info1-desc'),
-        info2_desc: getTpl(tile, '.tpl-info2-desc'),
-        description: getTpl(tile, '.tpl-description'),
+        contact_title: tile.dataset.contactTitle || '',
+        resources_title: tile.dataset.resourcesTitle || '',
+        description_title: tile.dataset.descriptionTitle || '',
+
+        contact_details: getTpl(tile, '.tpl-contact-details'),
+        resources_details: getTpl(tile, '.tpl-resources-details'),
+        description_details: getTpl(tile, '.tpl-description-details'),
+
+        project_description: getTpl(tile, '.tpl-project-description'),
     });
 
-    const renderEmptyText = (text) =>
-        `<span class="muted">${text}</span>`;
+    const getTileButtonMetaByIndex = (index) => {
+        if (index === 0) {
+            return { key: 'contact_title', label: 'Contact', view: 'contact' };
+        }
+        if (index === 1) {
+            return { key: 'resources_title', label: 'Ressources documentaires', view: 'resources' };
+        }
+        if (index === 2) {
+            return { key: 'description_title', label: 'Description avancée', view: 'description' };
+        }
+        return { key: '', label: '', view: 'project' };
+    };
 
-    const renderEmptyDescription = () =>
-        '<span class="muted"><em>Aucune description</em></span>';
+    const getModalActionMeta = (action) => {
+        if (action === 'mailto') {
+            return { key: 'contact_title', label: 'Contact', view: 'contact' };
+        }
+        if (action === 'doc') {
+            return { key: 'resources_title', label: 'Ressources documentaires', view: 'resources' };
+        }
+        if (action === 'open') {
+            return { key: 'description_title', label: 'Description avancée', view: 'description' };
+        }
+        return { key: '', label: '', view: 'project' };
+    };
 
-    const renderProject = () => {
-        const body = (currentData?.description || '').trim();
+    const setButtonAvailability = (button, value, titleWhenAvailable = '') => {
+        if (!button) return;
+
+        const available = hasContent(value);
+
+        button.classList.toggle('is-disabled', !available);
+
+        if ('disabled' in button) {
+            button.disabled = !available;
+        }
+
+        if (available) {
+            button.removeAttribute('aria-disabled');
+            button.setAttribute('title', titleWhenAvailable || '');
+        } else {
+            button.setAttribute('aria-disabled', 'true');
+            button.setAttribute('title', 'Non renseigné');
+        }
+    };
+
+    const updateTileButtons = (tile) => {
+        if (!tile) return;
+
+        const data = buildTileData(tile);
+        const buttons = Array.from(tile.querySelectorAll('.tile-btn'));
+
+        buttons.forEach((button, index) => {
+            const meta = getTileButtonMetaByIndex(index);
+            const value = meta.key ? data[meta.key] : '';
+            setButtonAvailability(button, value, meta.label);
+        });
+    };
+
+    const updateAllTileButtons = () => {
+        document.querySelectorAll('.project-tile').forEach(updateTileButtons);
+    };
+
+    const updateModalActionButtons = () => {
+        if (!currentData) return;
+
+        modalActionButtons.forEach((button) => {
+            const meta = getModalActionMeta(button.dataset.modalAction);
+            const value = meta.key ? currentData[meta.key] : '';
+            setButtonAvailability(button, value, meta.label);
+        });
+    };
+
+    const setModalActionActive = (view) => {
+        modalActionButtons.forEach((button) => {
+            const meta = getModalActionMeta(button.dataset.modalAction);
+            const active = meta.view === view;
+
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+    };
+
+    const setTileActive = (tile, active) => {
+        document.querySelectorAll('.project-tile.is-active').forEach((el) => {
+            el.classList.remove('is-active');
+        });
+
+        if (tile && active) {
+            tile.classList.add('is-active');
+        }
+    };
+
+    const renderProjectView = () => {
+        const body = (currentData?.project_description || '').trim();
 
         return `
             <div class="card-section">
-                <div class="section-title section-title--center">
-                    Description avancée
-                </div>
-
+                <div class="section-title section-title--center">Description avancée</div>
                 <div class="wysiwyg" style="margin-top:12px;">
-                    ${body || renderEmptyDescription()}
+                    ${body || renderEmptyBlock()}
                 </div>
             </div>
         `;
     };
 
-    const renderInfoBlock = (title, html, withProject = true) => {
-        const t = (title || '').trim();
-        const body = (html || '').trim();
+    const renderInfoView = (title, body) => {
+        const safeTitle = (title || '').trim();
+        const safeBody = (body || '').trim();
 
         return `
             <div class="card-section">
                 <div class="section-title">
-                    ${t || renderEmptyText('Non renseigné')}
+                    ${safeTitle || renderMuted('Non renseigné')}
                 </div>
-
                 <div class="wysiwyg wysiwyg--compact" style="margin-top:12px;">
-                    ${body || renderEmptyDescription()}
+                    ${safeBody || renderEmptyBlock()}
                 </div>
             </div>
-
-            ${withProject ? `
-                <hr style="border:0;border-top:1px solid rgba(0,0,0,.08);margin:18px 0;">
-                ${renderProject()}
-            ` : ''}
         `;
     };
 
     const renderView = (view) => {
         switch (view) {
             case 'contact':
-                return renderInfoBlock(currentData?.contact, currentData?.contact_desc);
+                return renderInfoView(
+                    currentData?.contact_title,
+                    currentData?.contact_details
+                );
 
-            case 'info1':
-                return renderInfoBlock(currentData?.info1_title, currentData?.info1_desc);
+            case 'resources':
+                return renderInfoView(
+                    currentData?.resources_title,
+                    currentData?.resources_details
+                );
 
-            case 'info2':
-                return renderInfoBlock(currentData?.info2_title, currentData?.info2_desc);
+            case 'description':
+                return renderInfoView(
+                    currentData?.description_title,
+                    currentData?.description_details
+                );
 
             case 'project':
             default:
-                return renderProject();
+                return renderProjectView();
         }
     };
 
@@ -141,22 +198,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentData) return;
 
         currentView = view;
-        modalTitle.textContent = currentData.title;
-        modalSubtext.textContent = currentData.subtext;
+        modalTitle.textContent = currentData.title || '';
+        modalSubtext.textContent = currentData.subtext || '';
         modalDesc.innerHTML = renderView(view);
 
         forceLinksTargetBlank(modalDesc);
-
+        updateModalActionButtons();
         setModalActionActive(view);
     };
 
-    /* =========================================================
-     * Modal
-     * ========================================================= */
     const openModal = (tile, view = 'project') => {
         currentTile = tile;
         currentData = buildTileData(tile);
 
+        updateTileButtons(tile);
         updateModalContent(view);
 
         modal.classList.add('is-open');
@@ -183,39 +238,28 @@ document.addEventListener('DOMContentLoaded', () => {
         setModalActionActive(null);
     };
 
-    /* =========================================================
-     * Mapping actions / vues
-     * ========================================================= */
-    const getViewFromTileButtonIndex = (idx) => {
-        if (idx === 0) return 'contact';
-        if (idx === 1) return 'info1';
-        if (idx === 2) return 'info2';
-        return 'project';
-    };
+    updateAllTileButtons();
 
-    const getViewFromModalAction = (action) => {
-        if (action === 'mailto') return 'contact';
-        if (action === 'open') return 'info1';
-        if (action === 'doc') return 'info2';
-        return 'project';
-    };
-
-    /* =========================================================
-     * Events modal
-     * ========================================================= */
     modal.addEventListener('click', (e) => {
         if (e.target.closest('[data-close="1"]')) {
             closeModal();
             return;
         }
 
-        const actionBtn = e.target.closest('[data-modal-action]');
-        if (!actionBtn || !currentData) return;
+        const actionButton = e.target.closest('[data-modal-action]');
+        if (!actionButton || !currentData) return;
 
-        const action = actionBtn.dataset.modalAction;
-        const view = getViewFromModalAction(action);
+        if (
+            actionButton.disabled ||
+            actionButton.classList.contains('is-disabled') ||
+            actionButton.getAttribute('aria-disabled') === 'true'
+        ) {
+            e.preventDefault();
+            return;
+        }
 
-        updateModalContent(view);
+        const meta = getModalActionMeta(actionButton.dataset.modalAction);
+        updateModalContent(meta.view);
     });
 
     window.addEventListener('keydown', (e) => {
@@ -224,18 +268,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    /* =========================================================
-     * Events grid
-     * ========================================================= */
     grid.addEventListener('click', (e) => {
         const tile = e.target.closest('.project-tile');
         if (!tile) return;
 
-        const btn = e.target.closest('.tile-btn');
-        const buttons = btn ? Array.from(tile.querySelectorAll('.tile-btn')) : [];
-        const idx = btn ? buttons.indexOf(btn) : -1;
+        const button = e.target.closest('.tile-btn');
 
-        const view = getViewFromTileButtonIndex(idx);
+        if (
+            button &&
+            (
+                button.disabled ||
+                button.classList.contains('is-disabled') ||
+                button.getAttribute('aria-disabled') === 'true'
+            )
+        ) {
+            e.preventDefault();
+            return;
+        }
+
+        let view = 'project';
+
+        if (button) {
+            const buttons = Array.from(tile.querySelectorAll('.tile-btn'));
+            const index = buttons.indexOf(button);
+            view = getTileButtonMetaByIndex(index).view;
+        }
 
         e.preventDefault();
 
@@ -247,57 +304,48 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        setTileLoading(tile, true);
-
-        try {
-            openModal(tile, view);
-        } finally {
-            setTileLoading(tile, false);
-        }
+        openModal(tile, view);
     });
 
-    /* =========================================================
-     * Filtres catégories
-     * ========================================================= */
     const pills = Array.from(document.querySelectorAll('.cat-pill[data-category-id]'));
     const tiles = Array.from(document.querySelectorAll('.project-tile[data-category-ids]'));
 
     let currentCategory = 'all';
 
-    const setActivePill = (pill) => {
-        pills.forEach(p => {
-            const isActive = (p === pill);
-            p.classList.toggle('is-active', isActive);
-            p.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    const setActivePill = (activePill) => {
+        pills.forEach((pill) => {
+            const isActive = pill === activePill;
+            pill.classList.toggle('is-active', isActive);
+            pill.setAttribute('aria-selected', isActive ? 'true' : 'false');
         });
     };
 
     const showAllTiles = () => {
-        tiles.forEach(tile => {
+        tiles.forEach((tile) => {
             tile.style.display = '';
         });
     };
 
-    const filterByCategoryId = (catId) => {
-        const wanted = String(catId);
+    const filterByCategoryId = (categoryId) => {
+        const wanted = String(categoryId);
 
-        tiles.forEach(tile => {
+        tiles.forEach((tile) => {
             const ids = (tile.dataset.categoryIds || '')
                 .split(',')
-                .map(s => s.trim())
+                .map((v) => v.trim())
                 .filter(Boolean);
 
             tile.style.display = ids.includes(wanted) ? '' : 'none';
         });
     };
 
-    pills.forEach(pill => {
+    pills.forEach((pill) => {
         pill.addEventListener('click', () => {
             const id = pill.dataset.categoryId;
 
             if (currentCategory === id) {
                 currentCategory = 'all';
-                const allPill = pills.find(p => p.dataset.categoryId === 'all');
+                const allPill = pills.find((p) => p.dataset.categoryId === 'all');
                 if (allPill) setActivePill(allPill);
                 showAllTiles();
                 return;

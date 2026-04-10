@@ -11,7 +11,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 $action = $_POST['action'] ?? '';
 
 try {
-    if ($action === 'create_projet') {
+    if ($action === 'create_project') {
         $data = project_payload_from_post($_POST);
         $id = createProject($data);
         echo json_encode(['success' => true, 'id' => $id]);

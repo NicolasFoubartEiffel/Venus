@@ -1,57 +1,95 @@
 <?php foreach ($projects as $p): ?>
     <?php
-    // champs texte simples (ok en data-*)
-    $title   = (string)($p['title'] ?? '');
-    $subtext = (string)($p['subtext'] ?? '');
-    $contact = (string)($p['contact'] ?? '');
-    $info1_t = (string)($p['info_1_title'] ?? '');
-    $info2_t = (string)($p['info_2_title'] ?? '');
+    $projectId = (int)($p['id'] ?? 0);
 
-    // champs HTML TinyMCE (NE PAS mettre en data-*)
-    $contact_desc = (string)($p['contact_description'] ?? '');
-    $info1_desc   = (string)($p['info_1_description'] ?? '');
-    $info2_desc   = (string)($p['info_2_description'] ?? '');
-    $desc         = (string)($p['description'] ?? '');
+    // Champs texte
+    $title             = trim((string)($p['title'] ?? ''));
+    $subtext           = trim((string)($p['subtext'] ?? ''));
+    $contactTitle      = trim((string)($p['contact_title'] ?? ''));
+    $resourcesTitle    = trim((string)($p['resources_title'] ?? ''));
+    $descriptionTitle  = trim((string)($p['description_title'] ?? ''));
 
-    // titres de tooltip
-    $titleContact = (trim($contact) === '' || strtolower(trim($contact)) === 'non renseigné') ? 'Non renseigné' : 'Contact';
-    $titleInfo1   = (trim($info1_t) === '' || strtolower(trim($info1_t)) === 'non renseigné') ? 'Non renseigné' : 'Liens utiles';
-    $titleInfo2   = (trim($info2_t) === '' || strtolower(trim($info2_t)) === 'non renseigné') ? 'Non renseigné' : 'Ressources Documentaires';
+    // HTML
+    $contactDetails     = (string)($p['contact_details'] ?? '');
+    $resourcesDetails   = (string)($p['resources_details'] ?? '');
+    $descriptionDetails = (string)($p['description_details'] ?? '');
+
+    // Description principale = avancée (OK)
+    $projectDescription = $descriptionDetails;
+
+    // Catégories
+    $categoryIds = !empty($p['category_ids']) && is_array($p['category_ids'])
+        ? array_map('intval', $p['category_ids'])
+        : [];
+
+    $categoryIdsAttr = implode(',', $categoryIds);
+
+    // Tooltips
+    $titleContact = ($contactTitle === '' || mb_strtolower($contactTitle) === 'non renseigné')
+        ? 'Non renseigné'
+        : 'Contact';
+
+    $titleResources = ($resourcesTitle === '' || mb_strtolower($resourcesTitle) === 'non renseigné')
+        ? 'Non renseigné'
+        : 'Ressources documentaires';
+
+    $titleDescription = ($descriptionTitle === '' || mb_strtolower($descriptionTitle) === 'non renseigné')
+        ? 'Non renseigné'
+        : 'Description avancée';
     ?>
 
     <article
             class="project-tile"
-            data-project-id="<?= (int)($p['id'] ?? 0) ?>"
-
+            data-project-id="<?= $projectId ?>"
             data-title="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>"
             data-subtext="<?= htmlspecialchars($subtext, ENT_QUOTES, 'UTF-8') ?>"
-
-            data-contact="<?= htmlspecialchars($contact, ENT_QUOTES, 'UTF-8') ?>"
-            data-info1-title="<?= htmlspecialchars($info1_t, ENT_QUOTES, 'UTF-8') ?>"
-            data-info2-title="<?= htmlspecialchars($info2_t, ENT_QUOTES, 'UTF-8') ?>"
-
-            data-category-ids="<?= htmlspecialchars(implode(',', $p['category_ids'] ?? []), ENT_QUOTES, 'UTF-8') ?>"
+            data-contact-title="<?= htmlspecialchars($contactTitle, ENT_QUOTES, 'UTF-8') ?>"
+            data-resources-title="<?= htmlspecialchars($resourcesTitle, ENT_QUOTES, 'UTF-8') ?>"
+            data-description-title="<?= htmlspecialchars($descriptionTitle, ENT_QUOTES, 'UTF-8') ?>"
+            data-category-ids="<?= htmlspecialchars($categoryIdsAttr, ENT_QUOTES, 'UTF-8') ?>"
     >
-        <!-- HTML riche : stocké en template -->
-        <template class="tpl-contact-desc"><?= $contact_desc ?></template>
-        <template class="tpl-info1-desc"><?= $info1_desc ?></template>
-        <template class="tpl-info2-desc"><?= $info2_desc ?></template>
-        <template class="tpl-description"><?= $desc ?></template>
+        <!-- ORDRE GARANTI -->
+        <template class="tpl-contact-details"><?= $contactDetails ?></template>
+        <template class="tpl-resources-details"><?= $resourcesDetails ?></template>
+        <template class="tpl-description-details"><?= $descriptionDetails ?></template>
+
+        <template class="tpl-project-description"><?= $projectDescription ?></template>
 
         <div class="tile-head">
             <div class="tile-title"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></div>
-            <div class="tile-subtext"><?= htmlspecialchars($subtext, ENT_QUOTES, 'UTF-8') ?></div>
+
+            <?php if ($subtext !== ''): ?>
+                <div class="tile-subtext"><?= htmlspecialchars($subtext, ENT_QUOTES, 'UTF-8') ?></div>
+            <?php endif; ?>
 
             <div class="tile-actions">
-                <button class="tile-btn" type="button" title="<?= htmlspecialchars($titleContact, ENT_QUOTES, 'UTF-8') ?>" aria-label="Contacter">
+                <!-- 1️⃣ CONTACT -->
+                <button
+                        class="tile-btn"
+                        type="button"
+                        title="<?= htmlspecialchars($titleContact, ENT_QUOTES, 'UTF-8') ?>"
+                        aria-label="Contacter"
+                >
                     <img src="assets/icons/mail_icon.png" alt="">
                 </button>
 
-                <button class="tile-btn" type="button" title="<?= htmlspecialchars($titleInfo1, ENT_QUOTES, 'UTF-8') ?>" aria-label="Ouvrir le lien">
+                <!-- 2️⃣ RESSOURCES -->
+                <button
+                        class="tile-btn"
+                        type="button"
+                        title="<?= htmlspecialchars($titleResources, ENT_QUOTES, 'UTF-8') ?>"
+                        aria-label="Ressources"
+                >
                     <img src="assets/icons/mail_link.png" alt="">
                 </button>
 
-                <button class="tile-btn" type="button" title="<?= htmlspecialchars($titleInfo2, ENT_QUOTES, 'UTF-8') ?>" aria-label="Ouvrir la documentation">
+                <!-- 3️⃣ DESCRIPTION AVANCÉE (TOUJOURS DERNIER) -->
+                <button
+                        class="tile-btn"
+                        type="button"
+                        title="<?= htmlspecialchars($titleDescription, ENT_QUOTES, 'UTF-8') ?>"
+                        aria-label="Description avancée"
+                >
                     <img src="assets/icons/mail_doc.png" alt="">
                 </button>
             </div>

@@ -33,7 +33,7 @@ require_once 'partials/header.php';
 </div>
 
 <div class="hint">
-    Cliquez sur une tuile pour obtenir plus d'informations.
+    Cliquez sur une rubrique pour obtenir plus d'informations.
 </div>
 
 <div class="layout-wrapper">

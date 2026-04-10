@@ -2,7 +2,7 @@
     <h2>Projets existants</h2>
 
     <div class="hint">
-        Cliquez sur une tuile pour obtenir plus d'informations.
+        Cliquez sur une rubrique pour obtenir plus d'informations.
     </div>
 
     <div class="project-columns-admin">

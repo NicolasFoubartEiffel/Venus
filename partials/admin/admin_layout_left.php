@@ -3,7 +3,7 @@
         <h2 id="project-form-title">Ajouter un projet</h2>
 
         <form id="create-project-form" method="post" class="project-form-ui">
-            <input type="hidden" name="action" id="project-action" value="create_projet">
+            <input type="hidden" name="action" id="project-action" value="create_project">
             <input type="hidden" name="id" id="project-id" value="">
 
             <div class="form-grid">
@@ -23,79 +23,110 @@
                     <div class="cat-grid">
                         <?php foreach ($categories as $cat): ?>
                             <label class="cat-check">
-                                <input type="checkbox" name="category_ids[]" value="<?= (int)$cat['id'] ?>">
+                                <input type="checkbox" name="category_ids[]" value="<?= (int) $cat['id'] ?>">
                                 <span><?= htmlspecialchars($cat['nom'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
                             </label>
                         <?php endforeach; ?>
                     </div>
                 </fieldset>
 
-                <!-- Segmented control + slider panes -->
                 <div class="field field-full">
-
                     <div class="segmented" role="tablist" aria-label="Sections du projet" data-active="0">
-                        <button type="button" class="seg-btn is-active" role="tab" aria-selected="true" data-target="pane-contact">
+                        <button
+                                type="button"
+                                class="seg-btn is-active"
+                                role="tab"
+                                aria-selected="true"
+                                data-target="pane-contact"
+                        >
                             Contact
                         </button>
-                        <button type="button" class="seg-btn" role="tab" aria-selected="false" data-target="pane-info1">
-                            Liens utiles
+
+                        <button
+                                type="button"
+                                class="seg-btn"
+                                role="tab"
+                                aria-selected="false"
+                                data-target="pane-resources"
+                        >
+                            Ressources
                         </button>
-                        <button type="button" class="seg-btn" role="tab" aria-selected="false" data-target="pane-info2">
-                            Ressources documentaires
+
+                        <button
+                                type="button"
+                                class="seg-btn"
+                                role="tab"
+                                aria-selected="false"
+                                data-target="pane-description"
+                        >
+                            Description avancée
                         </button>
+
                         <span class="seg-indicator" aria-hidden="true"></span>
                     </div>
 
-                    <!-- IMPORTANT: wrapper + track pour le slide des panes -->
                     <div class="seg-wrap" data-active="0">
-
                         <div class="seg-track">
-                            <!-- Pane Contact -->
+
                             <div class="seg-pane is-active" id="pane-contact" role="tabpanel" aria-hidden="false">
                                 <div class="field">
                                     <label for="project-contact">Titre - Contact</label>
-                                    <input type="text" name="contact" id="project-contact">
+                                    <input type="text" name="contact_title" id="project-contact">
                                 </div>
 
                                 <div class="field field-full">
-                                    <label for="contact-description">Description du contact</label>
-                                    <textarea name="contact_description" id="contact-description" class="textarea-sm tinymce"></textarea>
+                                    <label for="contact-details">Description</label>
+                                    <textarea
+                                            name="contact_details"
+                                            id="contact-details"
+                                            class="textarea-sm tinymce"
+                                    ></textarea>
                                 </div>
                             </div>
 
-                            <!-- Pane Info 1 -->
-                            <div class="seg-pane" id="pane-info1" role="tabpanel" aria-hidden="true">
+                            <div class="seg-pane" id="pane-resources" role="tabpanel" aria-hidden="true">
                                 <div class="field">
-                                    <label for="info_1_title">Titre - Liens utile</label>
-                                    <input type="text" name="info_1_title" id="info_1_title">
+                                    <label for="resources-title">Titre - Ressources</label>
+                                    <input type="text" name="resources_title" id="resources-title">
                                 </div>
 
                                 <div class="field field-full">
-                                    <label for="info-1-description">Description</label>
-                                    <textarea name="info_1_description" id="info-1-description" class="textarea-sm tinymce"></textarea>
+                                    <label for="resources-details">Description</label>
+                                    <textarea
+                                            name="resources_details"
+                                            id="resources-details"
+                                            class="textarea-sm tinymce"
+                                    ></textarea>
                                 </div>
                             </div>
 
-                            <!-- Pane Info 2 -->
-                            <div class="seg-pane" id="pane-info2" role="tabpanel" aria-hidden="true">
+                            <div class="seg-pane" id="pane-description" role="tabpanel" aria-hidden="true">
                                 <div class="field">
-                                    <label for="info_2_title">Titre - Ressources documentaire</label>
-                                    <input type="text" name="info_2_title" id="info_2_title">
+                                    <label for="description-title">Titre - Description avancée</label>
+                                    <input type="text" name="description_title" id="description-title">
                                 </div>
 
                                 <div class="field field-full">
-                                    <label for="info-2-description">Description</label>
-                                    <textarea name="info_2_description" id="info-2-description" class="textarea-sm tinymce"></textarea>
+                                    <label for="description-details">Description</label>
+                                    <textarea
+                                            name="description_details"
+                                            id="description-details"
+                                            class="textarea-sm tinymce"
+                                    ></textarea>
                                 </div>
                             </div>
-                        </div><!-- /.seg-track -->
 
-                    </div><!-- /.seg-wrap -->
+                        </div>
+                    </div>
                 </div>
 
                 <div class="field field-full">
-                    <label for="project-description">Description détaillée du projet</label>
-                    <textarea name="description" id="project-description" class="textarea-lg tinymce"></textarea>
+                    <label for="comments">Commentaire interne</label>
+                    <textarea
+                            name="comments"
+                            id="comments"
+                            class="textarea-lg tinymce"
+                    ></textarea>
                 </div>
 
             </div>
