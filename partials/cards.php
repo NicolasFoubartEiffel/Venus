@@ -1,8 +1,5 @@
 <?php foreach ($projects as $p): ?>
     <?php
-    /*echo '<pre>';
-    var_dump($p);
-    echo '</pre>';*/
     $projectId = (int)($p['id'] ?? 0);
 
     // Champs texte

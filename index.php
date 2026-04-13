@@ -3,7 +3,7 @@ require_once 'db/functions.php';
 $projects = getAllProjects();
 $categories = getAllCategories();
 
-$pageTitle = "Accueil – Projets Venus";
+$pageTitle = "Accueil – CRAc-RF";
 $isAdmin = false;
 require_once 'partials/header.php';
 ?>

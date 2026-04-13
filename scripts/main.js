@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentTile = null;
     let currentData = null;
-    let currentView = 'description';
+    let currentView = 'project';
+
     const hasContent = (value) => String(value || '').trim() !== '';
 
     const forceLinksTargetBlank = (container) => {
@@ -47,68 +48,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getTileButtonMetaByIndex = (index) => {
         if (index === 0) {
-            return {
-                titleKey: 'contact_title',
-                contentKey: 'contact_details',
-                label: 'Contact',
-                view: 'contact'
-            };
+            return { key: 'contact_title', label: 'Contact', view: 'contact' };
         }
         if (index === 1) {
-            return {
-                titleKey: 'resources_title',
-                contentKey: 'resources_details',
-                label: 'Ressources documentaires',
-                view: 'resources'
-            };
+            return { key: 'resources_title', label: 'Ressources documentaires', view: 'resources' };
         }
         if (index === 2) {
-            return {
-                titleKey: 'description_title',
-                contentKey: 'description_details',
-                label: 'Description avancée',
-                view: 'description'
-            };
+            return { key: 'description_title', label: 'Description avancée', view: 'description' };
         }
-        return {
-            titleKey: '',
-            contentKey: '',
-            label: '',
-            view: 'description'
-        };
+        return { key: '', label: '', view: 'project' };
     };
+
     const getModalActionMeta = (action) => {
         if (action === 'mailto') {
-            return {
-                titleKey: 'contact_title',
-                contentKey: 'contact_details',
-                label: 'Contact',
-                view: 'contact'
-            };
+            return { key: 'contact_title', label: 'Contact', view: 'contact' };
         }
         if (action === 'doc') {
-            return {
-                titleKey: 'resources_title',
-                contentKey: 'resources_details',
-                label: 'Ressources documentaires',
-                view: 'resources'
-            };
+            return { key: 'resources_title', label: 'Ressources documentaires', view: 'resources' };
         }
         if (action === 'open') {
-            return {
-                titleKey: 'description_title',
-                contentKey: 'description_details',
-                label: 'Description avancée',
-                view: 'description'
-            };
+            return { key: 'description_title', label: 'Description avancée', view: 'description' };
         }
-        return {
-            titleKey: '',
-            contentKey: '',
-            label: '',
-            view: 'description'
-        };
+        return { key: '', label: '', view: 'project' };
     };
+
     const setButtonAvailability = (button, value, titleWhenAvailable = '') => {
         if (!button) return;
 
@@ -137,11 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         buttons.forEach((button, index) => {
             const meta = getTileButtonMetaByIndex(index);
-            const titleValue = meta.titleKey ? data[meta.titleKey] : '';
-            const contentValue = meta.contentKey ? data[meta.contentKey] : '';
-            const available = hasContent(titleValue) || hasContent(contentValue);
-
-            setButtonAvailability(button, available ? '1' : '', meta.label);
+            const value = meta.key ? data[meta.key] : '';
+            setButtonAvailability(button, value, meta.label);
         });
     };
 
@@ -154,11 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modalActionButtons.forEach((button) => {
             const meta = getModalActionMeta(button.dataset.modalAction);
-            const titleValue = meta.titleKey ? currentData[meta.titleKey] : '';
-            const contentValue = meta.contentKey ? currentData[meta.contentKey] : '';
-            const available = hasContent(titleValue) || hasContent(contentValue);
-
-            setButtonAvailability(button, available ? '1' : '', meta.label);
+            const value = meta.key ? currentData[meta.key] : '';
+            setButtonAvailability(button, value, meta.label);
         });
     };
 
@@ -227,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             case 'description':
                 return renderInfoView(
-                    currentData?.description_title || 'Description avancée',
+                    currentData?.description_title,
                     currentData?.description_details
                 );
 
@@ -250,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setModalActionActive(view);
     };
 
-    const openModal = (tile, view = 'description') => {
+    const openModal = (tile, view = 'project') => {
         currentTile = tile;
         currentData = buildTileData(tile);
 
@@ -275,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentTile = null;
         currentData = null;
-        currentView = 'description';
+        currentView = 'project';
 
         setTileActive(null, false);
         setModalActionActive(null);
@@ -329,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let view = 'description';
+        let view = 'project';
 
         if (button) {
             const buttons = Array.from(tile.querySelectorAll('.tile-btn'));

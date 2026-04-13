@@ -3,7 +3,7 @@ require_once __DIR__ . '/db/functions.php';
 $projects = getAllProjects();
 $categories = getAllCategories();
 
-$pageTitle = "Administration – Projets Venus";
+$pageTitle = "Administration – CRAc-RF";
 $isAdmin = true;
 require_once 'partials/header.php';
 

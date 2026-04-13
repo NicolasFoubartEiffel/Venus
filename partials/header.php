@@ -32,7 +32,7 @@ $isAdmin = $isAdmin ?? false;
 
 
         <nav>
-            <h1><?= $isAdmin ? '🏠 Plateforme CRAc-RF' : '⚙️ Admin CRAc-RF' ?></h1>
+            <h1><?= !($isAdmin) ? '🏠 Plateforme CRAc-RF' : '⚙️ Admin CRAc-RF' ?></h1>
         </nav>
 
         <div class="header-right">
