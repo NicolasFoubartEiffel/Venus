@@ -18,7 +18,7 @@ $isAdmin = $isAdmin ?? false;
     <script src="scripts/main.js" defer></script>
 
     <?php if ($isAdmin): ?>
-        <script src="https://cdn.tiny.cloud/1/agg6bprgioeg5erogmmflzp6cxhn9u5f7zh6d0r06ow03hia/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+        <script src="assets/vendor/tinymce/tinymce.min.js"></script>
         <script src="scripts/admin.js" defer></script>
     <?php endif; ?>
 </head>

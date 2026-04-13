@@ -96,6 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tinymce.init({
             selector: 'textarea.tinymce',
+            license_key: 'gpl',
+            promotion: false,
             height: 320,
             menubar: true,
             branding: false,
