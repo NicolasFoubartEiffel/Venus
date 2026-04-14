@@ -1,18 +1,21 @@
 <?php
-// globals.php
 global $USER;
 
-// Assurez-vous que la session est d�marr�e avant d'acc�der � $_SESSION
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Affectez la valeur de $_SESSION['user'] � la variable globale
 $USER = isset($_SESSION['ldap_data'][0]) && is_array($_SESSION['ldap_data'][0])
     ? (object) $_SESSION['ldap_data'][0]
     : null;
 
-$currentUser = $USER->uid[0];
+if ($USER === null) {
+    header('Location: /apps/index.php?app=/apps/venus/index.php');
+    exit;
+}
+
+$currentUser = $USER->uid[0] ?? '';
+
 $adminList = [
     'nicolas.foubart',
     'mickael.huneau',
@@ -20,12 +23,8 @@ $adminList = [
     'jamila.al-khatib'
 ];
 
-$isAdmin = false;
-if(in_array($currentUser, $adminList)) {
-    $isAdmin = true;
-}
+$isAdmin = in_array($currentUser, $adminList, true);
 
-var_dump($isAdmin);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
