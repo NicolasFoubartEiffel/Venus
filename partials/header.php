@@ -1,5 +1,31 @@
 <?php
-$isAdmin = $isAdmin ?? false;
+// globals.php
+global $USER;
+
+// Assurez-vous que la session est d�marr�e avant d'acc�der � $_SESSION
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Affectez la valeur de $_SESSION['user'] � la variable globale
+$USER = isset($_SESSION['ldap_data'][0]) && is_array($_SESSION['ldap_data'][0])
+    ? (object) $_SESSION['ldap_data'][0]
+    : null;
+
+$currentUser = $USER->uid[0];
+$adminList = [
+    'nicolas.foubart',
+    'mickael.huneau',
+    'jonathan.gibert',
+    'jamila.al-khatib'
+];
+
+$isAdmin = false;
+if(in_array($currentUser, $adminList)) {
+    $isAdmin = true;
+}
+
+var_dump($isAdmin);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -30,6 +56,7 @@ $isAdmin = $isAdmin ?? false;
             <img src="assets/icons/Logo_UGE.png" class="logo" alt="Logo UGE">
         </div>
 
+        <?php $isAdminPage = basename($_SERVER['PHP_SELF']) === 'admin.php'; ?>
 
         <nav>
             <h1><?= !($isAdmin) ? '🏠 Plateforme CRAc-RF' : '⚙️ Admin CRAc-RF' ?></h1>
@@ -38,9 +65,12 @@ $isAdmin = $isAdmin ?? false;
         <div class="header-right">
             <span class="project-name">CRAc-RF</span>
 
-            <a class="admin-link" href="<?= $isAdmin ? 'index.php' : 'admin.php' ?>">
-                <?= $isAdmin ? '🏠 Accueil' : '⚙️ Admin' ?>
-            </a>
+            <?php if ($isAdmin): ?>
+                <a class="admin-link" href="<?= $isAdminPage ? 'index.php' : 'admin.php' ?>">
+                    <?= $isAdminPage ? '🏠 Retour accueil' : '⚙️ Panneau d’administration' ?>
+                </a>
+            <?php endif; ?>
         </div>
+
     </div>
 </header>
