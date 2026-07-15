@@ -1,0 +1,166 @@
+/* =========================
+   MODAL ACTIONS HEADER
+   Fermer / Favori / Partager
+========================= */
+
+.modal-side-actions{
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 6;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Style commun des boutons */
+.modal-action-btn{
+    width: 42px;
+    height: 42px;
+
+    padding: 0;
+    border-radius: 12px;
+    border: 1px solid rgba(47,47,134,.12);
+
+    background: rgba(255,255,255,.94);
+    color: #1f2a44;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    line-height: 1;
+
+    box-shadow: 0 4px 12px rgba(31, 42, 68, 0.08);
+
+    transition:
+            transform .15s ease,
+            box-shadow .15s ease,
+            background .15s ease,
+            border-color .15s ease,
+            color .15s ease;
+}
+
+.modal-action-btn:hover{
+    transform: translateY(-1px);
+    background: #ffffff;
+    border-color: rgba(47,47,134,.20);
+    box-shadow: 0 10px 18px rgba(31, 42, 68, 0.12);
+}
+
+.modal-action-btn:active{
+    transform: scale(.96);
+}
+
+.modal-action-btn:focus-visible{
+    outline: 3px solid rgba(47,47,134,.16);
+    outline-offset: 2px;
+}
+
+/* Croix */
+.modal-close{
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 7;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* Favori */
+.modal-favorite{
+    font-size: 18px;
+}
+
+.modal-favorite.is-active{
+    color: #f59e0b;
+    background: #fff7e8;
+    border-color: rgba(245,158,11,.35);
+    box-shadow: 0 0 0 3px rgba(245,158,11,.18);
+}
+
+/* Partage */
+.modal-share{
+    font-size: 17px;
+}
+
+.modal-share.is-copied{
+    color: #10b981;
+    background: #ecfdf5;
+    border-color: rgba(16,185,129,.30);
+}
+
+/* Loading commun */
+.modal-action-btn.is-loading,
+.modal-favorite.is-loading,
+.modal-share.is-loading{
+    opacity: .65;
+    cursor: wait;
+    pointer-events: none;
+}
+
+/* toast */
+.copy-toast{
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    z-index: 9999;
+    transform:
+            translateX(-50%)
+            translateY(16px);
+
+    opacity: 0;
+    pointer-events: none;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background:
+            rgba(15,23,42,.92);
+
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow:
+            0 12px 32px rgba(0,0,0,.18);
+    backdrop-filter: blur(10px);
+    transition:
+            opacity .22s ease,
+            transform .22s ease;
+}
+
+.copy-toast.is-visible{
+    opacity: 1;
+    transform:
+            translateX(-50%)
+            translateY(0);
+}
+
+.modal-category-beans{
+    position: absolute;
+    top: 24px;
+    right: 86px;
+    z-index: 5;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 5px;
+    max-width: min(260px, calc(50% - 110px));
+    flex-wrap: wrap;
+}
+
+.modal-category-beans .tile-category-pill{
+    font-size: 11px;
+    padding: 4px 9px;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+@media (max-height: 700px){
+    .modal-category-beans{
+        top: 20px;
+        right: 74px;
+        max-width: min(240px, calc(50% - 96px));
+    }
+}

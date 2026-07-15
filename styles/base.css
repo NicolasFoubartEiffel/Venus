@@ -1,0 +1,75 @@
+/* =========================
+   BASE
+========================= */
+
+:root{
+    --bg-page: #f4f6fb;
+    --bg-soft: #fafbff;
+    --surface: #ffffff;
+    --surface-alt: #f5f6ff;
+
+    --text-main: #1c2340;
+    --text-soft: #58607a;
+    --text-muted: #98a1b2;
+
+    /* 🔵 NOUVEAU PRIMARY */
+    --primary: #292981;
+
+    /* versions soft (important pour garder de la légèreté) */
+    --primary-soft: #eeefff;
+    --primary-soft-hover: #e3e5ff;
+
+    /* borders (un peu moins saturés sinon trop violents) */
+    --primary-border: rgba(41, 41, 129, 0.14);
+    --primary-border-strong: rgba(41, 41, 129, 0.26);
+
+    /* secondaire inchangé mais légèrement adouci */
+    --secondary: #06b6d4;
+    --secondary-soft: #ecfeff;
+    --secondary-border: rgba(6, 182, 212, 0.16);
+
+    /* accent (marche très bien avec ton nouveau bleu) */
+    --accent: #f59e0b;
+    --accent-soft: #fff6e6;
+    --accent-border: rgba(245, 158, 11, 0.22);
+
+    --success: #10b981;
+    --success-soft: #ecfdf5;
+    --success-border: rgba(16, 185, 129, 0.20);
+
+    --danger: #ef4444;
+    --danger-soft: #fef2f2;
+    --danger-border: rgba(239, 68, 68, 0.18);
+
+    /* ombres un peu plus profondes (car primary plus dark) */
+    --shadow-soft: 0 10px 26px rgba(28, 35, 64, 0.07);
+    --shadow-medium: 0 20px 38px rgba(28, 35, 64, 0.14);
+
+    --radius-lg: 20px;
+    --radius-md: 14px;
+}
+
+
+html{
+    font-size: 100%;
+}
+
+body{
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(180deg, #f8faff 0%, #f4f7fb 100%);
+    color: var(--text-main);
+    font-size: 17px;
+    margin: 0;
+    padding: 24px;
+}
+
+.hint{
+    max-width: 1400px;
+    margin: 0 auto 16px auto;
+    padding: 10px 12px;
+    border: 1px dashed rgba(0,0,0,.18);
+    border-radius: 10px;
+    background: #fff;
+    color: #2c3e50;
+    font-size: 14px;
+}

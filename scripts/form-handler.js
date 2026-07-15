@@ -13,10 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Projet créé avec succès');
+                    alert('Projet crÃ©Ã© avec succÃ¨s');
                     window.location.reload(); // Recharger la page pour afficher le projet
                 } else {
-                    alert('Erreur lors de la création du projet');
+                    alert('Erreur lors de la crÃ©ation du projet');
                 }
             })
             .catch(error => alert('Erreur AJAX : ' + error));
