@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminSearchClear = qs('[data-admin-clear-search]');
     const adminSearchEmpty = qs('[data-admin-search-empty]');
     const densityInputs = qsa('[data-admin-density]');
+    const statsToggle = qs('[data-admin-stats-toggle]');
+    const statsPanel = $('admin-tracking-stats');
 
     const categoryCheckboxes = qsa('#category-checkboxes input[type="checkbox"][name="category_ids[]"]');
 
@@ -39,6 +41,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentMode = 'create';
     const densityStorageKey = 'crac-admin-density';
+
+    function setStatsPanelOpen(open) {
+        if (!statsPanel || !statsToggle) return;
+
+        statsPanel.hidden = !open;
+        statsPanel.classList.toggle('is-open', open);
+        statsToggle.classList.toggle('is-active', open);
+        statsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    if (statsToggle && statsPanel) {
+        setStatsPanelOpen(!statsPanel.hidden);
+
+        statsToggle.addEventListener('click', () => {
+            setStatsPanelOpen(statsPanel.hidden);
+        });
+    }
 
     function stripFontStylesFromNode(root) {
         if (!root?.querySelectorAll) return;

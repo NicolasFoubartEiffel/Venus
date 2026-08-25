@@ -81,6 +81,18 @@ $pageTitle = $pageTitle ?? 'Projets Venus';
 
         <div class="header-right">
             <?php if ($isAdmin): ?>
+                <?php if ($isAdminPage): ?>
+                    <button
+                            type="button"
+                            class="admin-header-tool"
+                            data-admin-stats-toggle
+                            aria-controls="admin-tracking-stats"
+                            aria-expanded="false"
+                    >
+                        Statistiques des tuiles
+                    </button>
+                <?php endif; ?>
+
                 <a class="admin-link" href="<?= $isAdminPage ? 'index.php' : 'admin.php' ?>">
                     <span class="admin-link-icon" aria-hidden="true"><?= $isAdminPage ? '&larr;' : '&#9881;' ?></span>
                     <span><?= $isAdminPage ? 'Retour accueil' : 'Administration' ?></span>

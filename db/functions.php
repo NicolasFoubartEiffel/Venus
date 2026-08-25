@@ -619,6 +619,23 @@ function getTileTrackingFlags(string $tabKey): array
     ];
 }
 
+function normalizeTrackingDate($value): string
+{
+    $value = trim((string)$value);
+
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+        return '';
+    }
+
+    $date = DateTime::createFromFormat('Y-m-d', $value);
+
+    if (!$date || $date->format('Y-m-d') !== $value) {
+        return '';
+    }
+
+    return $value;
+}
+
 function recordTileInteraction(int $tileId, string $tabKey): bool
 {
     global $pdo;
@@ -670,12 +687,34 @@ function recordTileInteraction(int $tileId, string $tabKey): bool
     return true;
 }
 
-function getTileInteractionStats(): array
+function getTileInteractionStats(string $dateFrom = '', string $dateTo = ''): array
 {
     global $pdo;
 
     try {
-        $stmt = $pdo->query("
+        $dateFrom = normalizeTrackingDate($dateFrom);
+        $dateTo = normalizeTrackingDate($dateTo);
+
+        $conditions = [];
+        $params = [];
+
+        if ($dateFrom !== '') {
+            $conditions[] = 't.clicked_at >= :date_from';
+            $params[':date_from'] = $dateFrom . ' 00:00:00';
+        }
+
+        if ($dateTo !== '') {
+            $conditions[] = 't.clicked_at < (CAST(:date_to AS date) + INTERVAL ' . "'1 day'" . ')';
+            $params[':date_to'] = $dateTo;
+        }
+
+        $trackingFilter = '';
+
+        if (!empty($conditions)) {
+            $trackingFilter = 'AND ' . implode(' AND ', $conditions);
+        }
+
+        $stmt = $pdo->prepare("
             SELECT
                 p.id AS tile_id,
                 p.title AS tile_title,
@@ -687,9 +726,16 @@ function getTileInteractionStats(): array
             FROM projects p
             LEFT JOIN tile_click_tracking t
                 ON t.tile_id = p.id
+                $trackingFilter
             GROUP BY p.id, p.title, p.display_order
             ORDER BY total_clicks DESC, p.display_order ASC, p.title ASC
         ");
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value, PDO::PARAM_STR);
+        }
+
+        $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Throwable $e) {
@@ -697,9 +743,9 @@ function getTileInteractionStats(): array
     }
 }
 
-function exportTileInteractionStatsCsv(): void
+function exportTileInteractionStatsCsv(string $dateFrom = '', string $dateTo = ''): void
 {
-    $stats = getTileInteractionStats();
+    $stats = getTileInteractionStats($dateFrom, $dateTo);
 
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="stats_tuiles.csv"');

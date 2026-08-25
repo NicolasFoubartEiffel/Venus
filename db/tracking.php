@@ -4,7 +4,7 @@ require_once __DIR__ . '/functions.php';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'GET' && ($_GET['export'] ?? '') === 'csv') {
-    exportTileInteractionStatsCsv();
+    exportTileInteractionStatsCsv($_GET['date_from'] ?? '', $_GET['date_to'] ?? '');
 }
 
 if ($method !== 'POST') {
