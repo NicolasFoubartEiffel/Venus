@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return { key: '', label: '', view: 'project' };
     };
 
-    const trackTileInteraction = (tile, view, source = 'tile') => {
+    const trackTileInteraction = (tile, view) => {
         const projectId = tile?.dataset?.projectId || modal?.dataset?.projectId || '';
 
         if (!projectId || !['description', 'resources', 'contact'].includes(view)) {
@@ -256,7 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams({
             tile_id: projectId,
             tab_key: view,
-            source,
         });
 
         if (navigator.sendBeacon) {
@@ -435,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setModalActionActive(view);
 
         if (!options.skipTracking) {
-            trackTileInteraction(currentTile, view, options.source || 'modal');
+            trackTileInteraction(currentTile, view);
         }
     };
 
@@ -559,7 +558,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateTileButtons(tile);
         updateModalContent(view, {
-            source: options.source || 'tile',
             skipTracking: Boolean(options.skipTracking),
         });
 
@@ -619,7 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const meta = getModalActionMeta(action);
-        updateModalContent(meta.view, { source: 'modal' });
+        updateModalContent(meta.view);
     });
 
     window.addEventListener('keydown', (e) => {
@@ -676,7 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        openModal(tile, view, { source: button ? 'tile_tab' : 'tile' });
+        openModal(tile, view);
     });
 
     const pills = Array.from(document.querySelectorAll('.cat-pill[data-category-id]'));
@@ -835,7 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         setTimeout(() => {
-            openModal(tile, requestedView, { source: 'shared_link' });
+            openModal(tile, requestedView);
         }, 250);
     };
 

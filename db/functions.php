@@ -619,7 +619,7 @@ function getTileTrackingFlags(string $tabKey): array
     ];
 }
 
-function recordTileInteraction(int $tileId, string $tabKey, string $source = 'tile'): bool
+function recordTileInteraction(int $tileId, string $tabKey): bool
 {
     global $pdo;
 
@@ -628,7 +628,6 @@ function recordTileInteraction(int $tileId, string $tabKey, string $source = 'ti
     }
 
     $tabKey = normalizeTileTrackingTab($tabKey);
-    $source = trim($source) !== '' ? trim($source) : 'tile';
     $flags = getTileTrackingFlags($tabKey);
 
     try {
@@ -651,8 +650,6 @@ function recordTileInteraction(int $tileId, string $tabKey, string $source = 'ti
                 tab_1,
                 tab_2,
                 tab_3,
-                tab_key,
-                source,
                 clicked_at
             )
             VALUES (
@@ -660,8 +657,6 @@ function recordTileInteraction(int $tileId, string $tabKey, string $source = 'ti
                 :tab_1,
                 :tab_2,
                 :tab_3,
-                :tab_key,
-                :source,
                 NOW()
             )
         ");
@@ -671,8 +666,6 @@ function recordTileInteraction(int $tileId, string $tabKey, string $source = 'ti
             ':tab_1' => $flags['tab_1'] ? 1 : 0,
             ':tab_2' => $flags['tab_2'] ? 1 : 0,
             ':tab_3' => $flags['tab_3'] ? 1 : 0,
-            ':tab_key' => $tabKey !== '' ? $tabKey : 'tile',
-            ':source' => $source,
         ]);
 
         return true;
@@ -690,7 +683,7 @@ function getTileInteractionStats(): array
             SELECT
                 p.id AS tile_id,
                 p.title AS tile_title,
-                COUNT(t.id) AS total_clicks,
+                COUNT(t.clicked_at) AS total_clicks,
                 COALESCE(SUM(CASE WHEN t.tab_1 THEN 1 ELSE 0 END), 0) AS tab_1_clicks,
                 COALESCE(SUM(CASE WHEN t.tab_2 THEN 1 ELSE 0 END), 0) AS tab_2_clicks,
                 COALESCE(SUM(CASE WHEN t.tab_3 THEN 1 ELSE 0 END), 0) AS tab_3_clicks,
