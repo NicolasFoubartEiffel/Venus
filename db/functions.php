@@ -630,48 +630,44 @@ function recordTileInteraction(int $tileId, string $tabKey): bool
     $tabKey = normalizeTileTrackingTab($tabKey);
     $flags = getTileTrackingFlags($tabKey);
 
-    try {
-        $existsStmt = $pdo->prepare("
-            SELECT 1
-            FROM projects
-            WHERE id = :id
-            LIMIT 1
-        ");
+    $existsStmt = $pdo->prepare("
+        SELECT 1
+        FROM projects
+        WHERE id = :id
+        LIMIT 1
+    ");
 
-        $existsStmt->execute([':id' => $tileId]);
+    $existsStmt->execute([':id' => $tileId]);
 
-        if (!$existsStmt->fetchColumn()) {
-            return false;
-        }
-
-        $stmt = $pdo->prepare("
-            INSERT INTO tile_click_tracking (
-                tile_id,
-                tab_1,
-                tab_2,
-                tab_3,
-                clicked_at
-            )
-            VALUES (
-                :tile_id,
-                :tab_1,
-                :tab_2,
-                :tab_3,
-                NOW()
-            )
-        ");
-
-        $stmt->execute([
-            ':tile_id' => $tileId,
-            ':tab_1' => $flags['tab_1'] ? 1 : 0,
-            ':tab_2' => $flags['tab_2'] ? 1 : 0,
-            ':tab_3' => $flags['tab_3'] ? 1 : 0,
-        ]);
-
-        return true;
-    } catch (Throwable $e) {
+    if (!$existsStmt->fetchColumn()) {
         return false;
     }
+
+    $stmt = $pdo->prepare("
+        INSERT INTO tile_click_tracking (
+            tile_id,
+            tab_1,
+            tab_2,
+            tab_3,
+            clicked_at
+        )
+        VALUES (
+            :tile_id,
+            :tab_1,
+            :tab_2,
+            :tab_3,
+            NOW()
+        )
+    ");
+
+    $stmt->execute([
+        ':tile_id' => $tileId,
+        ':tab_1' => $flags['tab_1'] ? 1 : 0,
+        ':tab_2' => $flags['tab_2'] ? 1 : 0,
+        ':tab_3' => $flags['tab_3'] ? 1 : 0,
+    ]);
+
+    return true;
 }
 
 function getTileInteractionStats(): array

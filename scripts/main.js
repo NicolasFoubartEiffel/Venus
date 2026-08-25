@@ -258,16 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tab_key: view,
         });
 
-        if (navigator.sendBeacon) {
-            const blob = new Blob([params.toString()], {
-                type: 'application/x-www-form-urlencoded; charset=UTF-8',
-            });
-
-            if (navigator.sendBeacon('db/tracking.php', blob)) {
-                return;
-            }
-        }
-
         fetch('db/tracking.php', {
             method: 'POST',
             headers: {
@@ -275,7 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: params,
             keepalive: true,
-        }).catch(() => {});
+        })
+            .then((response) => response.ok ? response : Promise.reject(response))
+            .catch((error) => {
+                console.error('Tracking impossible :', error);
+            });
     };
 
     const setButtonAvailability = (button, value, titleWhenAvailable = '') => {

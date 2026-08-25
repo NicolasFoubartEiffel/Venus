@@ -14,4 +14,6 @@ CREATE INDEX IF NOT EXISTS idx_tile_click_tracking_tile_id
 CREATE INDEX IF NOT EXISTS idx_tile_click_tracking_clicked_at
     ON tile_click_tracking (clicked_at);
 
+GRANT SELECT, INSERT ON TABLE tile_click_tracking TO cipen;
+
 COMMIT;
