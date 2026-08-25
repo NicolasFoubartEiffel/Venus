@@ -59,5 +59,4 @@
         </form>
     </div>
 
-    <?php require 'partials/admin/admin_tracking_stats.php'; ?>
 </main>
