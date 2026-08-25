@@ -1,5 +1,6 @@
 # Local configuration
 config/config.php
+collect_sympa_mails.php
 
 # Editor and IDE metadata
 .idea/
