@@ -807,23 +807,25 @@ button:active{transform:translateY(1px);}
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    min-height:54px;
-    min-width:196px;
-    padding:0 18px;
-    border-radius:5px;
-    border:3px solid #a51e69;
-    background:#ad22e9;
-    color:#fff;
+    gap:8px;
+    min-height:38px;
+    padding:8px 13px;
+    border-radius:8px;
+    border:1px solid var(--primary-border);
+    background:#fff;
+    color:var(--primary);
     font-size:14px;
-    font-weight:900;
-    line-height:1.1;
-    box-shadow:none;
+    font-weight:700;
+    line-height:1;
+    box-shadow:0 4px 12px rgba(28,35,64,.05);
 }
 
 .admin-header-tool:hover,
 .admin-header-tool.is-active{
     filter:none;
-    background:#961bd0;
+    border-color:var(--primary-border-strong);
+    background:var(--primary-soft);
+    box-shadow:0 8px 18px rgba(28,35,64,.09);
 }
 
 .admin-stats-filters{
@@ -953,7 +955,7 @@ button:active{transform:translateY(1px);}
     .admin-header-tool{
         min-width:0;
         width:100%;
-        min-height:42px;
+        min-height:40px;
     }
 
     .admin-stats-head{
