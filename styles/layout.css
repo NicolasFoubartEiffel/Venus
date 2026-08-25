@@ -1,0 +1,26 @@
+/* =========================
+   LAYOUT
+========================= */
+.layout-wrapper{
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.project-grid{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:20px;
+    align-items:stretch;
+}
+
+.category-bar{
+    max-width: 1400px;
+    margin: 25px auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}

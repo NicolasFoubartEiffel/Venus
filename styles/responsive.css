@@ -1,0 +1,36 @@
+/* =========================
+   RESPONSIVE
+========================= */
+@media (min-width: 1400px){
+    body{
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 1200px){
+    .project-grid{
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px){
+    .project-grid{
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .category-bar{
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 600px){
+    .project-grid{
+        grid-template-columns: 1fr;
+    }
+
+    .floating-calendar-btn{
+        width: 100%;
+        justify-content: center;
+    }
+}
