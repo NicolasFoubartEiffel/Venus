@@ -19,9 +19,8 @@ if ($method !== 'POST') {
 
 $tileId = (int)($_POST['tile_id'] ?? 0);
 $tabKey = (string)($_POST['tab_key'] ?? 'tile');
-$source = (string)($_POST['source'] ?? 'tile');
 
-$success = recordTileInteraction($tileId, $tabKey, $source);
+$success = recordTileInteraction($tileId, $tabKey);
 
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode([
