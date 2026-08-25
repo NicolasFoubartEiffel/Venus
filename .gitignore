@@ -1,0 +1,31 @@
+# Local configuration
+config/config.php
+
+# Editor and IDE metadata
+.idea/
+.vscode/
+*.sublime-*
+
+# Local tool downloads
+.tools/
+
+# Operating system files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Runtime and temporary files
+*.log
+*.tmp
+*.bak
+*_old
+*.swp
+
+# Local dependency caches
+node_modules/
+/vendor/
+
+# Local environment files
+.env
+.env.*
+!.env.example
