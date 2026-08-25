@@ -20,9 +20,21 @@ if ($method !== 'POST') {
 $tileId = (int)($_POST['tile_id'] ?? 0);
 $tabKey = (string)($_POST['tab_key'] ?? 'tile');
 
-$success = recordTileInteraction($tileId, $tabKey);
-
 header('Content-Type: application/json; charset=utf-8');
-echo json_encode([
-    'success' => $success,
-]);
+
+try {
+    $success = recordTileInteraction($tileId, $tabKey);
+
+    echo json_encode([
+        'success' => $success,
+        'tile_id' => $tileId,
+        'tab_key' => normalizeTileTrackingTab($tabKey),
+    ]);
+} catch (Throwable $e) {
+    http_response_code(500);
+
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage(),
+    ]);
+}
