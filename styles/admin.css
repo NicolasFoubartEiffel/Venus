@@ -770,6 +770,103 @@ button:active{transform:translateY(1px);}
     font-size:13px;
 }
 
+.admin-stats-panel{
+    margin-top:18px;
+    padding:16px;
+    background:var(--surface);
+    border:1px solid rgba(41,41,129,.10);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-soft);
+}
+
+.admin-stats-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+}
+
+.admin-stats-head h2{
+    margin:0;
+    font-size:18px;
+}
+
+.admin-stats-head p{
+    margin:4px 0 0;
+    color:var(--text-soft);
+    font-size:13px;
+}
+
+.admin-export-link{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:34px;
+    padding:0 12px;
+    border-radius:999px;
+    background:var(--primary-soft);
+    border:1px solid var(--primary-border);
+    color:var(--primary);
+    font-size:13px;
+    font-weight:800;
+    text-decoration:none;
+    white-space:nowrap;
+}
+
+.admin-export-link:hover{
+    background:var(--primary-soft-hover);
+}
+
+.admin-stats-empty{
+    margin:0;
+    padding:12px 14px;
+    border:1px dashed rgba(88,96,122,.22);
+    border-radius:12px;
+    color:var(--text-soft);
+    background:#fbfcff;
+}
+
+.admin-stats-table-wrap{
+    overflow-x:auto;
+}
+
+.admin-stats-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+}
+
+.admin-stats-table th,
+.admin-stats-table td{
+    padding:9px 8px;
+    border-bottom:1px solid var(--border-soft);
+    text-align:left;
+    vertical-align:top;
+}
+
+.admin-stats-table th{
+    color:var(--text-soft);
+    font-size:12px;
+    font-weight:800;
+    text-transform:uppercase;
+}
+
+.admin-stats-table td:not(:first-child){
+    white-space:nowrap;
+}
+
+.admin-stats-table td span{
+    display:block;
+    margin-top:2px;
+    color:var(--text-muted);
+    font-size:12px;
+}
+
+.admin-stats-table .muted{
+    color:var(--text-muted);
+}
+
 /* ===================================================== */
 /* ===== ACCORDÉON PROJETS ============================= */
 /* ===================================================== */

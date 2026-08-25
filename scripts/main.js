@@ -246,6 +246,39 @@ document.addEventListener('DOMContentLoaded', () => {
         return { key: '', label: '', view: 'project' };
     };
 
+    const trackTileInteraction = (tile, view, source = 'tile') => {
+        const projectId = tile?.dataset?.projectId || modal?.dataset?.projectId || '';
+
+        if (!projectId || !['description', 'resources', 'contact'].includes(view)) {
+            return;
+        }
+
+        const params = new URLSearchParams({
+            tile_id: projectId,
+            tab_key: view,
+            source,
+        });
+
+        if (navigator.sendBeacon) {
+            const blob = new Blob([params.toString()], {
+                type: 'application/x-www-form-urlencoded; charset=UTF-8',
+            });
+
+            if (navigator.sendBeacon('db/tracking.php', blob)) {
+                return;
+            }
+        }
+
+        fetch('db/tracking.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            },
+            body: params,
+            keepalive: true,
+        }).catch(() => {});
+    };
+
     const setButtonAvailability = (button, value, titleWhenAvailable = '') => {
         if (!button) return;
 
@@ -390,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const updateModalContent = (view) => {
+    const updateModalContent = (view, options = {}) => {
         if (!currentData) return;
 
         currentView = view;
@@ -400,6 +433,10 @@ document.addEventListener('DOMContentLoaded', () => {
         forceLinksTargetBlank(modalDesc);
         updateModalActionButtons();
         setModalActionActive(view);
+
+        if (!options.skipTracking) {
+            trackTileInteraction(currentTile, view, options.source || 'modal');
+        }
     };
 
     const copyCurrentTileLink = async (button) => {
@@ -487,7 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const openModal = (tile, view = 'description') => {
+    const openModal = (tile, view = 'description', options = {}) => {
         currentTile = tile;
         modal.dataset.projectId = tile.dataset.projectId || '';
 
@@ -521,7 +558,10 @@ document.addEventListener('DOMContentLoaded', () => {
         currentData = buildTileData(tile);
 
         updateTileButtons(tile);
-        updateModalContent(view);
+        updateModalContent(view, {
+            source: options.source || 'tile',
+            skipTracking: Boolean(options.skipTracking),
+        });
 
         openBasicModal(modal);
         setTileActive(tile, true);
@@ -579,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const meta = getModalActionMeta(action);
-        updateModalContent(meta.view);
+        updateModalContent(meta.view, { source: 'modal' });
     });
 
     window.addEventListener('keydown', (e) => {
@@ -636,7 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        openModal(tile, view);
+        openModal(tile, view, { source: button ? 'tile_tab' : 'tile' });
     });
 
     const pills = Array.from(document.querySelectorAll('.cat-pill[data-category-id]'));
@@ -795,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         setTimeout(() => {
-            openModal(tile, requestedView);
+            openModal(tile, requestedView, { source: 'shared_link' });
         }, 250);
     };
 

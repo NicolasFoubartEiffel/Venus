@@ -591,6 +591,160 @@ function getUserFavoriteProjectIds(string $uid): array
 
 /**
  * =====================================================
+ * ===== TRACKING ======================================
+ * =====================================================
+ */
+
+function normalizeTileTrackingTab(string $tabKey): string
+{
+    $tabKey = strtolower(trim($tabKey));
+
+    $aliases = [
+        'doc' => 'description',
+        'open' => 'resources',
+        'mailto' => 'contact',
+    ];
+
+    return $aliases[$tabKey] ?? $tabKey;
+}
+
+function getTileTrackingFlags(string $tabKey): array
+{
+    $tabKey = normalizeTileTrackingTab($tabKey);
+
+    return [
+        'tab_1' => $tabKey === 'description',
+        'tab_2' => $tabKey === 'resources',
+        'tab_3' => $tabKey === 'contact',
+    ];
+}
+
+function recordTileInteraction(int $tileId, string $tabKey, string $source = 'tile'): bool
+{
+    global $pdo;
+
+    if ($tileId <= 0) {
+        return false;
+    }
+
+    $tabKey = normalizeTileTrackingTab($tabKey);
+    $source = trim($source) !== '' ? trim($source) : 'tile';
+    $flags = getTileTrackingFlags($tabKey);
+
+    try {
+        $existsStmt = $pdo->prepare("
+            SELECT 1
+            FROM projects
+            WHERE id = :id
+            LIMIT 1
+        ");
+
+        $existsStmt->execute([':id' => $tileId]);
+
+        if (!$existsStmt->fetchColumn()) {
+            return false;
+        }
+
+        $stmt = $pdo->prepare("
+            INSERT INTO tile_click_tracking (
+                tile_id,
+                tab_1,
+                tab_2,
+                tab_3,
+                tab_key,
+                source,
+                clicked_at
+            )
+            VALUES (
+                :tile_id,
+                :tab_1,
+                :tab_2,
+                :tab_3,
+                :tab_key,
+                :source,
+                NOW()
+            )
+        ");
+
+        $stmt->execute([
+            ':tile_id' => $tileId,
+            ':tab_1' => $flags['tab_1'] ? 1 : 0,
+            ':tab_2' => $flags['tab_2'] ? 1 : 0,
+            ':tab_3' => $flags['tab_3'] ? 1 : 0,
+            ':tab_key' => $tabKey !== '' ? $tabKey : 'tile',
+            ':source' => $source,
+        ]);
+
+        return true;
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
+function getTileInteractionStats(): array
+{
+    global $pdo;
+
+    try {
+        $stmt = $pdo->query("
+            SELECT
+                p.id AS tile_id,
+                p.title AS tile_title,
+                COUNT(t.id) AS total_clicks,
+                COALESCE(SUM(CASE WHEN t.tab_1 THEN 1 ELSE 0 END), 0) AS tab_1_clicks,
+                COALESCE(SUM(CASE WHEN t.tab_2 THEN 1 ELSE 0 END), 0) AS tab_2_clicks,
+                COALESCE(SUM(CASE WHEN t.tab_3 THEN 1 ELSE 0 END), 0) AS tab_3_clicks,
+                MAX(t.clicked_at) AS last_click_at
+            FROM projects p
+            LEFT JOIN tile_click_tracking t
+                ON t.tile_id = p.id
+            GROUP BY p.id, p.title, p.display_order
+            ORDER BY total_clicks DESC, p.display_order ASC, p.title ASC
+        ");
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+function exportTileInteractionStatsCsv(): void
+{
+    $stats = getTileInteractionStats();
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="stats_tuiles.csv"');
+
+    $output = fopen('php://output', 'w');
+
+    fputcsv($output, [
+        'tile_id',
+        'titre',
+        'total',
+        'tab_1_description',
+        'tab_2_ressources',
+        'tab_3_contact',
+        'dernier_clic',
+    ], ';');
+
+    foreach ($stats as $row) {
+        fputcsv($output, [
+            $row['tile_id'] ?? '',
+            $row['tile_title'] ?? '',
+            $row['total_clicks'] ?? 0,
+            $row['tab_1_clicks'] ?? 0,
+            $row['tab_2_clicks'] ?? 0,
+            $row['tab_3_clicks'] ?? 0,
+            $row['last_click_at'] ?? '',
+        ], ';');
+    }
+
+    fclose($output);
+    exit;
+}
+
+/**
+ * =====================================================
  * ===== ACTION ROUTER =================================
  * =====================================================
  */
