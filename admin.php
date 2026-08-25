@@ -2,6 +2,7 @@
 require_once __DIR__ . '/db/functions.php';
 $projects = getAllProjects();
 $categories = getAllCategories();
+$trackingStats = getTileInteractionStats();
 
 $pageTitle = "Administration – CRAc-RF";
 $isAdmin = true;
