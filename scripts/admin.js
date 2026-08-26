@@ -21,13 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const densityInputs = qsa('[data-admin-density]');
     const statsToggle = qs('[data-admin-stats-toggle]');
     const statsPanel = $('admin-tracking-stats');
-    const statsParams = new URLSearchParams(window.location.search);
-    const shouldKeepStatsInView = Boolean(statsPanel) && (
-        window.location.hash === '#admin-tracking-stats'
-        || statsParams.has('stats')
-        || statsParams.has('date_from')
-        || statsParams.has('date_to')
-    );
 
     const categoryCheckboxes = qsa('#category-checkboxes input[type="checkbox"][name="category_ids[]"]');
 
@@ -58,11 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
         statsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
 
-    function keepStatsPanelInView() {
-        if (!shouldKeepStatsInView || !statsPanel || statsPanel.hidden) return;
-
-        statsPanel.scrollIntoView({ behavior: 'auto', block: 'start' });
-    }
 
     if (statsToggle && statsPanel) {
         setStatsPanelOpen(!statsPanel.hidden);
@@ -197,6 +185,80 @@ document.addEventListener('DOMContentLoaded', () => {
         if (adminSearchEmpty) {
             adminSearchEmpty.hidden = query === '' || matches.length > 0;
         }
+    }
+
+    function initAdminStatsTable() {
+        if (!statsPanel) return;
+
+        const tools = qs('[data-admin-stats-tools]', statsPanel);
+        const rows = qsa('[data-admin-stats-row]', statsPanel);
+        const searchInput = qs('[data-admin-stats-search]', statsPanel);
+        const showAllButton = qs('[data-admin-stats-show-all]', statsPanel);
+        const summary = qs('[data-admin-stats-summary]', statsPanel);
+        const emptySearch = qs('[data-admin-stats-search-empty]', statsPanel);
+        const limit = Math.max(1, Number(tools?.dataset.limit || 5));
+        let expanded = false;
+
+        if (!rows.length) return;
+
+        function applyStatsView() {
+            const query = normalizeSearchText(searchInput?.value || '');
+            const terms = query.split(/\s+/).filter(Boolean);
+            const hasQuery = terms.length > 0;
+            let matchedCount = 0;
+            let visibleCount = 0;
+
+            rows.forEach((row) => {
+                const rowText = normalizeSearchText(row.dataset.tileSearch || row.textContent || '');
+                const matches = !hasQuery || terms.every((term) => rowText.includes(term));
+
+                if (matches) {
+                    matchedCount += 1;
+                }
+
+                const visible = matches && (hasQuery || expanded || matchedCount <= limit);
+                row.hidden = !visible;
+
+                if (visible) {
+                    visibleCount += 1;
+                }
+            });
+
+            if (showAllButton) {
+                showAllButton.hidden = hasQuery || rows.length <= limit;
+                showAllButton.textContent = expanded ? 'Voir le top 5' : 'Voir tout';
+            }
+
+            if (summary) {
+                if (hasQuery) {
+                    summary.textContent = `${visibleCount} resultat(s) sur ${rows.length} tuile(s)`;
+                } else if (expanded) {
+                    summary.textContent = `${visibleCount} tuile(s) affichee(s)`;
+                } else {
+                    summary.textContent = `Top ${visibleCount} sur ${rows.length} tuile(s)`;
+                }
+            }
+
+            if (emptySearch) {
+                emptySearch.hidden = !hasQuery || matchedCount > 0;
+            }
+        }
+
+        searchInput?.addEventListener('input', applyStatsView);
+
+        searchInput?.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+
+            searchInput.value = '';
+            applyStatsView();
+        });
+
+        showAllButton?.addEventListener('click', () => {
+            expanded = !expanded;
+            applyStatsView();
+        });
+
+        applyStatsView();
     }
 
     function getEditor(id) {
@@ -806,8 +868,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bootTinyMCE();
     initSegmented();
     initAdminSearch();
+    initAdminStatsTable();
     initAdminDensity();
     setCreateMode();
-    requestAnimationFrame(keepStatsPanelInView);
-    setTimeout(keepStatsPanelInView, 250);
 });
