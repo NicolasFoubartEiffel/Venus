@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (showAllButton) {
                 showAllButton.hidden = hasQuery || rows.length <= limit;
-                showAllButton.textContent = expanded ? 'Voir le top 5' : 'Voir tout';
+                showAllButton.textContent = expanded ? 'Voir le top ' + limit : 'Voir tout';
             }
 
             if (summary) {

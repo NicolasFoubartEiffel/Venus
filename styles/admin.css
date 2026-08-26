@@ -1003,6 +1003,88 @@ button:active{transform:translateY(1px);}
 .admin-stats-table .muted{
     color:var(--text-muted);
 }
+.admin-stats-panel{
+    margin-bottom:16px;
+    padding:12px 14px;
+}
+
+.admin-stats-head{
+    gap:10px;
+    margin-bottom:8px;
+}
+
+.admin-stats-head h2{
+    font-size:16px;
+}
+
+.admin-stats-head p{
+    margin-top:2px;
+}
+
+.admin-stats-filters{
+    gap:10px;
+    margin-bottom:10px;
+    padding:9px 10px;
+    border-radius:10px;
+}
+
+.admin-stats-filters label,
+.admin-stats-search{
+    gap:4px;
+}
+
+.admin-stats-filters label{
+    min-width:150px;
+}
+
+.admin-stats-filters input[type="date"],
+.admin-stats-filter-btn,
+.admin-stats-reset,
+.admin-stats-search input,
+.admin-stats-show-all{
+    min-height:32px;
+}
+
+.admin-stats-filter-btn,
+.admin-stats-show-all{
+    padding:0 10px;
+}
+
+.admin-stats-reset{
+    padding:0 9px;
+}
+
+.admin-stats-tools{
+    gap:10px;
+    margin-bottom:8px;
+}
+
+.admin-stats-search{
+    min-width:210px;
+}
+
+.admin-stats-search input,
+.admin-export-link{
+    padding-inline:10px;
+}
+
+.admin-export-link{
+    min-height:32px;
+}
+
+.admin-stats-summary{
+    margin-bottom:6px;
+}
+
+.admin-stats-empty{
+    padding:9px 12px;
+    border-radius:10px;
+}
+
+.admin-stats-table th,
+.admin-stats-table td{
+    padding:7px 8px;
+}
 
 @media(max-width:900px){
     .admin-header-tool{

@@ -11,7 +11,7 @@ $totalTrackedClicks = array_sum(array_map(function ($row) {
 $trackingDateFrom = $trackingDateFrom ?? '';
 $trackingDateTo = $trackingDateTo ?? '';
 $trackingStatsOpen = $trackingStatsOpen ?? false;
-$trackingTopLimit = 5;
+$trackingTopLimit = 3;
 
 $exportQuery = ['export' => 'csv'];
 
