@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setProjectFormOpen(open, { scroll = false, focus = false } = {}) {
         if (!formPanel || !formBody || !formToggle) return;
 
-        formBody.hidden = !open;
+        setDisclosureOpen(formBody, open);
         formPanel.classList.toggle('is-collapsed', !open);
         formPanel.classList.toggle('is-open', open);
         formToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -527,8 +527,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
         target.scrollIntoView({
             behavior: 'smooth',
-            block: 'start',
+            block: 'nearest',
         });
+    }
+
+    function prefersReducedMotion() {
+        return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function finishDisclosureAnimation(panel) {
+        const timeoutId = Number(panel.dataset.disclosureTimer || 0);
+
+        if (timeoutId) {
+            window.clearTimeout(timeoutId);
+        }
+    }
+
+    function setDisclosureOpen(panel, open) {
+        if (!panel) return;
+
+        finishDisclosureAnimation(panel);
+
+        if (prefersReducedMotion()) {
+            panel.hidden = !open;
+            panel.style.maxHeight = '';
+            panel.style.opacity = '';
+            return;
+        }
+
+        if (open) {
+            panel.hidden = false;
+            panel.style.overflow = 'hidden';
+            panel.style.maxHeight = '0px';
+            panel.style.opacity = '0';
+
+            requestAnimationFrame(() => {
+                panel.style.maxHeight = `${panel.scrollHeight}px`;
+                panel.style.opacity = '1';
+            });
+
+            const timer = window.setTimeout(() => {
+                panel.style.maxHeight = '';
+                panel.style.overflow = '';
+                panel.dataset.disclosureTimer = '';
+            }, 260);
+            panel.dataset.disclosureTimer = String(timer);
+            return;
+        }
+
+        panel.style.overflow = 'hidden';
+        panel.style.maxHeight = `${panel.scrollHeight}px`;
+        panel.style.opacity = '1';
+
+        requestAnimationFrame(() => {
+            panel.style.maxHeight = '0px';
+            panel.style.opacity = '0';
+        });
+
+        const timer = window.setTimeout(() => {
+            panel.hidden = true;
+            panel.style.maxHeight = '';
+            panel.style.opacity = '';
+            panel.style.overflow = '';
+            panel.dataset.disclosureTimer = '';
+        }, 260);
+        panel.dataset.disclosureTimer = String(timer);
     }
 
     function focusFormTitle() {
@@ -536,7 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!titleInput) return;
 
         setTimeout(() => {
-            titleInput.focus();
+            titleInput.focus({ preventScroll: true });
             titleInput.select?.();
         }, 350);
     }
@@ -632,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (body) {
-            body.hidden = true;
+            setDisclosureOpen(body, false);
         }
     }
 
@@ -650,7 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (body) {
-            body.hidden = false;
+            setDisclosureOpen(body, true);
         }
     }
 
