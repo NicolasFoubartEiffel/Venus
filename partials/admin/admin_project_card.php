@@ -51,48 +51,69 @@ if (!$hasDescriptionDetails) {
 
 $missingSectionsText = implode(', ', array_column($missingSections, 'text'));
 $missingSectionsHtml = implode(', ', array_column($missingSections, 'html'));
+$categoryIds = array_map(static function ($category) {
+    return (string)(int)($category['id'] ?? 0);
+}, $categories);
+$categoryNames = array_map(static function ($category) {
+    return categoryDisplayName(trim((string)($category['name'] ?? ''), '"'));
+}, $categories);
+$projectTitle = (string)($p['title'] ?? '');
+$projectSearchText = trim($projectTitle . ' ' . $subtext . ' ' . implode(' ', $categoryNames));
 ?>
 
-<div class="project-card is-collapsed" data-project-id="<?= (int)($p['id'] ?? 0) ?>">
-    <button class="card-gache" type="button" aria-expanded="false">
-        <div class="gache-left">
-            <div class="gache-title-row">
-                <div class="title">
-                    <?= htmlspecialchars((string)($p['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
-                    <?php if (!empty($p['comments'])): ?>
-                        <span class="title-comment-icon" aria-hidden="true">&nbsp;&nbsp;&#128488;</span>
+<div
+        class="project-card is-collapsed"
+        data-project-id="<?= (int)($p['id'] ?? 0) ?>"
+        data-project-hidden="<?= $isHidden ? '1' : '0' ?>"
+        data-project-incomplete="<?= !empty($missingSections) ? '1' : '0' ?>"
+        data-project-categories="<?= htmlspecialchars(implode(' ', $categoryIds), ENT_QUOTES, 'UTF-8') ?>"
+        data-project-search="<?= htmlspecialchars($projectSearchText, ENT_QUOTES, 'UTF-8') ?>"
+>
+    <div class="card-gache-wrap">
+        <button class="card-gache" type="button" aria-expanded="false">
+            <div class="gache-left">
+                <div class="gache-title-row">
+                    <div class="title">
+                        <?= htmlspecialchars($projectTitle, ENT_QUOTES, 'UTF-8') ?>
+                        <?php if (!empty($p['comments'])): ?>
+                            <span class="title-comment-icon" aria-hidden="true">&nbsp;&nbsp;&#128488;</span>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if (!empty($missingSections)): ?>
+                        <span
+                                class="completion-hint"
+                                title="Sections sans contenu : <?= htmlspecialchars($missingSectionsText, ENT_QUOTES, 'UTF-8') ?>"
+                        >
+                            &Agrave; compl&eacute;ter : <?= $missingSectionsHtml ?>
+                        </span>
                     <?php endif; ?>
                 </div>
 
-                <?php if (!empty($missingSections)): ?>
-                    <span
-                            class="completion-hint"
-                            title="Sections sans contenu : <?= htmlspecialchars($missingSectionsText, ENT_QUOTES, 'UTF-8') ?>"
-                    >
-                        &Agrave; compl&eacute;ter : <?= $missingSectionsHtml ?>
+                <div class="gache-meta-row">
+                    <span class="visibility-badge <?= $isHidden ? 'is-hidden' : 'is-visible' ?>">
+                        <?= $isHidden ? 'Masqu&eacute; c&ocirc;t&eacute; utilisateur' : 'Visible c&ocirc;t&eacute; utilisateur' ?>
                     </span>
-                <?php endif; ?>
+                </div>
             </div>
 
-            <div class="gache-meta-row">
-                <span class="visibility-badge <?= $isHidden ? 'is-hidden' : 'is-visible' ?>">
-                    <?= $isHidden ? 'Masqu&eacute; c&ocirc;t&eacute; utilisateur' : 'Visible c&ocirc;t&eacute; utilisateur' ?>
-                </span>
+            <div class="gache-right">
+                <div class="chips">
+                    <?php foreach ($categories as $category): ?>
+                        <span class="tile-category-pill tile-category-pill--<?= (int)$category['id'] ?> visibility-badge">
+                            <?= htmlspecialchars(categoryDisplayName(trim((string)$category['name'], '"')), ENT_QUOTES, 'UTF-8') ?>
+                        </span>
+                    <?php endforeach; ?>
+                </div>
+                <span class="drag-handle" title="D&eacute;placer" aria-hidden="true">&#9776;</span>
+                <span class="chevron" aria-hidden="true">&#9662;</span>
             </div>
-        </div>
+        </button>
 
-        <div class="gache-right">
-            <div class="chips">
-                <?php foreach ($categories as $category): ?>
-                    <span class="tile-category-pill tile-category-pill--<?= (int)$category['id'] ?> visibility-badge">
-                        <?= htmlspecialchars(categoryDisplayName(trim((string)$category['name'], "\"")), ENT_QUOTES, 'UTF-8') ?>
-                    </span>
-                <?php endforeach; ?>
-            </div>
-            <span class="drag-handle" title="D&eacute;placer" aria-hidden="true">&#9776;</span>
-            <span class="chevron" aria-hidden="true">&#9662;</span>
-        </div>
-    </button>
+        <button class="admin-action-btn edit-btn quick-edit-btn" type="button" data-id="<?= (int)($p['id'] ?? 0) ?>">
+            Modifier
+        </button>
+    </div>
 
     <div class="card-body" hidden>
         <?php if ($subtext !== ''): ?>

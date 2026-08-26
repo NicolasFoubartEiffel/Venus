@@ -1,7 +1,17 @@
-﻿<aside class="admin-left">
-    <div class="project-form">
-        <h2 id="project-form-title">Ajouter un projet</h2>
+<aside class="admin-left">
+    <div class="project-form is-collapsed" data-project-form-panel>
+        <div class="project-form-head">
+            <div>
+                <h2 id="project-form-title">Ajouter un projet</h2>
+                <p>Cr&eacute;er ou modifier une tuile du portail.</p>
+            </div>
 
+            <button type="button" class="project-form-toggle btn-primary" data-project-form-toggle aria-expanded="false" aria-controls="project-form-body">
+                + Ajouter une tuile
+            </button>
+        </div>
+
+        <div id="project-form-body" class="project-form-body" data-project-form-body hidden>
         <form id="create-project-form" method="post" class="project-form-ui">
             <input type="hidden" name="action" id="project-action" value="create_project">
             <input type="hidden" name="id" id="project-id" value="">
@@ -109,5 +119,6 @@
                 <button type="button" id="project-cancel-btn" class="btn-ghost" style="display:none;">Annuler</button>
             </div>
         </form>
+        </div>
     </div>
 </aside>

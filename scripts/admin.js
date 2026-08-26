@@ -14,10 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const adminLeft = qs('.admin-left');
     const adminRight = qs('.admin-right');
+    const formPanel = qs('[data-project-form-panel]');
+    const formBody = qs('[data-project-form-body]');
+    const formToggle = qs('[data-project-form-toggle]');
     const projectList = $('sortable-projects');
     const adminSearchInput = qs('[data-admin-project-search]');
     const adminSearchClear = qs('[data-admin-clear-search]');
     const adminSearchEmpty = qs('[data-admin-search-empty]');
+    const adminFilterButtons = qsa('[data-admin-filter]');
     const densityInputs = qsa('[data-admin-density]');
     const statsToggle = qs('[data-admin-stats-toggle]');
     const statsPanel = $('admin-tracking-stats');
@@ -40,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const segWrap = qs('.seg-wrap');
 
     let currentMode = 'create';
+    let activeAdminFilter = { type: 'all', categoryId: '' };
     const densityStorageKey = 'crac-admin-density';
 
     function setStatsPanelOpen(open) {
@@ -145,11 +150,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function buildAdminCardIndex(card) {
         const title = qs('.gache-left .title', card)?.textContent || '';
+        const searchText = card.dataset.projectSearch || title;
 
         return {
             card,
             title: title.trim(),
-            text: normalizeSearchText(title),
+            text: normalizeSearchText(searchText),
+            hidden: card.dataset.projectHidden === '1',
+            incomplete: card.dataset.projectIncomplete === '1',
+            categories: new Set((card.dataset.projectCategories || '').split(/\s+/).filter(Boolean)),
         };
     }
 
@@ -157,6 +166,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!projectList) return [];
 
         return qsa('.project-card', projectList).map(buildAdminCardIndex);
+    }
+
+    function matchesAdminFilter(entry) {
+        if (activeAdminFilter.type === 'hidden') return entry.hidden;
+        if (activeAdminFilter.type === 'incomplete') return entry.incomplete;
+        if (activeAdminFilter.type === 'category') return entry.categories.has(activeAdminFilter.categoryId);
+
+        return true;
     }
 
     function applyAdminSearch() {
@@ -168,7 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const matches = [];
 
         index.forEach((entry) => {
-            const visible = terms.length === 0 || terms.every((term) => entry.text.includes(term));
+            const matchesSearch = terms.length === 0 || terms.every((term) => entry.text.includes(term));
+            const visible = matchesSearch && matchesAdminFilter(entry);
 
             entry.card.hidden = !visible;
             entry.card.setAttribute('aria-hidden', visible ? 'false' : 'true');
@@ -183,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (adminSearchEmpty) {
-            adminSearchEmpty.hidden = query === '' || matches.length > 0;
+            adminSearchEmpty.hidden = matches.length > 0;
         }
     }
 
@@ -297,6 +315,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 editor.execCommand('mceRepaint');
             } catch (_) {}
         });
+    }
+    function setProjectFormOpen(open, { scroll = false, focus = false } = {}) {
+        if (!formPanel || !formBody || !formToggle) return;
+
+        formBody.hidden = !open;
+        formPanel.classList.toggle('is-collapsed', !open);
+        formPanel.classList.toggle('is-open', open);
+        formToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        formToggle.textContent = open ? 'Replier' : '+ Ajouter une tuile';
+
+        if (open) {
+            setTimeout(() => repaintEditorsInPane(formBody), 80);
+        }
+
+        if (open && scroll) {
+            scrollToForm();
+        }
+
+        if (open && focus) {
+            focusFormTitle();
+        }
     }
 
     function initTinyMCE() {
@@ -541,16 +580,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function setCreateMode({ scroll = false, focus = false } = {}) {
+    function setCreateMode({ scroll = false, focus = false, open = false } = {}) {
         resetFormCompletely();
-
-        if (scroll) {
-            scrollToForm();
-        }
-
-        if (focus) {
-            focusFormTitle();
-        }
+        setProjectFormOpen(open || scroll || focus, { scroll, focus });
     }
 
     function setEditMode(project) {
@@ -583,8 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fillEditorFields(project);
         activatePane(0);
 
-        scrollToForm();
-        focusFormTitle();
+        setProjectFormOpen(true, { scroll: true, focus: true });
     }
 
     function closeCard(card) {
@@ -645,6 +676,22 @@ document.addEventListener('DOMContentLoaded', () => {
             applyAdminSearch();
         });
 
+        adminFilterButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                activeAdminFilter = {
+                    type: button.dataset.adminFilter || 'all',
+                    categoryId: button.dataset.categoryId || '',
+                };
+
+                adminFilterButtons.forEach((filterButton) => {
+                    filterButton.classList.toggle('is-active', filterButton === button);
+                });
+
+                applyAdminSearch();
+            });
+        });
+
+        applyAdminSearch();
     }
 
     function applyAdminDensity(mode = 'dense') {
@@ -747,6 +794,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = button.closest('.project-card');
             const badge = card?.querySelector('.visibility-badge');
 
+            if (card) {
+                card.dataset.projectHidden = hidden ? '1' : '0';
+            }
+
             if (badge) {
                 badge.classList.toggle('is-hidden', hidden);
                 badge.classList.toggle('is-visible', !hidden);
@@ -758,6 +809,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (String(idInput?.value || '') === String(projectId)) {
                 setHidden(hidden ? 1 : 0);
             }
+
+            applyAdminSearch();
         } catch (error) {
             console.error(error);
             alert(error.message || 'Impossible de modifier la visibilité.');
@@ -862,7 +915,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     cancelBtn?.addEventListener('click', () => {
-        setCreateMode({ scroll: true, focus: true });
+        setCreateMode();
+    });
+
+    formToggle?.addEventListener('click', () => {
+        const shouldOpen = Boolean(formBody?.hidden);
+
+        if (shouldOpen && currentMode !== 'create') {
+            setCreateMode({ open: true, focus: true });
+            return;
+        }
+
+        setProjectFormOpen(shouldOpen, { focus: shouldOpen });
     });
 
     bootTinyMCE();
