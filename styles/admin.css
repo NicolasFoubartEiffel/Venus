@@ -1521,3 +1521,166 @@ a.link:hover,
         flex-basis:100%;
     }
 }
+/* ===================================================== */
+/* ===== ADMIN ERGONOMIE EXPERIMENTALE ================== */
+/* ===================================================== */
+
+.admin-layout{
+    max-width:1400px;
+    margin:0 auto;
+    gap:1.4rem;
+}
+
+.admin-right{
+    order:1;
+    flex:1.35;
+}
+
+.admin-left{
+    order:2;
+    flex:.85;
+}
+
+.project-form-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.project-form-head h2{
+    margin:0;
+}
+
+.project-form-head p{
+    margin:3px 0 0;
+    color:var(--text-soft);
+    font-size:13px;
+}
+
+.project-form-toggle{
+    flex:0 0 auto;
+    min-height:34px;
+    padding:0 12px;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+.project-form-body{
+    margin-top:14px;
+}
+
+.project-form-body[hidden]{
+    display:none;
+}
+
+.project-form.is-collapsed{
+    padding:16px 18px;
+}
+
+.admin-list-counts{
+    margin:4px 0 0;
+    color:var(--text-soft);
+    font-size:13px;
+    font-weight:600;
+}
+
+.admin-filter-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:0 0 12px;
+}
+
+.admin-filter-chip{
+    min-height:30px;
+    padding:0 10px;
+    border:1px solid var(--primary-border);
+    border-radius:999px;
+    background:#fff;
+    color:var(--primary);
+    font-size:12px;
+    font-weight:800;
+}
+
+.admin-filter-chip:hover,
+.admin-filter-chip.is-active{
+    filter:none;
+    background:var(--primary);
+    border-color:var(--primary);
+    color:#fff;
+}
+
+.card-gache-wrap{
+    display:flex;
+    align-items:stretch;
+    gap:8px;
+    padding-right:8px;
+    background:#fff;
+}
+
+.card-gache-wrap .card-gache{
+    flex:1 1 auto;
+    width:auto;
+}
+
+.quick-edit-btn{
+    align-self:center;
+    flex:0 0 auto;
+    min-height:30px;
+    padding:0 10px;
+    white-space:nowrap;
+}
+
+.admin-right.is-density-dense .card-gache-wrap{
+    gap:6px;
+    padding-right:7px;
+}
+
+.admin-right.is-density-dense .quick-edit-btn{
+    min-height:28px;
+    padding:0 9px;
+    font-size:12px;
+}
+
+.textarea-sm,
+.textarea-lg{
+    min-height:210px;
+}
+
+.tox .tox-edit-area{
+    min-height:220px;
+}
+
+@media(max-width:1050px){
+    .admin-layout{
+        flex-direction:column;
+    }
+
+    .admin-right,
+    .admin-left{
+        order:initial;
+        width:100%;
+    }
+
+    .admin-left .project-form{
+        position:static;
+    }
+}
+
+@media(max-width:700px){
+    .project-form-head,
+    .card-gache-wrap{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    .quick-edit-btn,
+    .project-form-toggle{
+        width:100%;
+    }
+
+    .card-gache-wrap{
+        padding-right:0;
+    }
+}
