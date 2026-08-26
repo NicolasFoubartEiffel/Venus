@@ -1,8 +1,8 @@
 <?php
 $trackingStats = $trackingStats ?? [];
-$trackedRows = array_filter($trackingStats, function ($row) {
+$trackedRows = array_values(array_filter($trackingStats, function ($row) {
     return (int)($row['total_clicks'] ?? 0) > 0;
-});
+}));
 
 $totalTrackedClicks = array_sum(array_map(function ($row) {
     return (int)($row['total_clicks'] ?? 0);
@@ -11,6 +11,7 @@ $totalTrackedClicks = array_sum(array_map(function ($row) {
 $trackingDateFrom = $trackingDateFrom ?? '';
 $trackingDateTo = $trackingDateTo ?? '';
 $trackingStatsOpen = $trackingStatsOpen ?? false;
+$trackingTopLimit = 5;
 
 $exportQuery = ['export' => 'csv'];
 
@@ -65,6 +66,27 @@ $trackingExportUrl = 'db/tracking.php?' . http_build_query($exportQuery, '', '&'
     <?php if (empty($trackedRows)): ?>
         <p class="admin-stats-empty">Aucun clic enregistr&eacute; pour le moment.</p>
     <?php else: ?>
+        <div class="admin-stats-tools" data-admin-stats-tools data-limit="<?= (int) $trackingTopLimit ?>">
+            <label class="admin-stats-search">
+                <span>Rechercher une tuile</span>
+                <input type="search" placeholder="Nom ou ID de tuile" data-admin-stats-search>
+            </label>
+
+            <?php if (count($trackedRows) > $trackingTopLimit): ?>
+                <button type="button" class="admin-stats-show-all" data-admin-stats-show-all>
+                    Voir tout
+                </button>
+            <?php endif; ?>
+
+            <p class="admin-stats-summary" data-admin-stats-summary>
+                Top <?= (int) min($trackingTopLimit, count($trackedRows)) ?> sur <?= (int) count($trackedRows) ?> tuile(s)
+            </p>
+        </div>
+
+        <p class="admin-stats-empty admin-stats-search-empty" data-admin-stats-search-empty hidden>
+            Aucune tuile ne correspond &agrave; cette recherche.
+        </p>
+
         <div class="admin-stats-table-wrap">
             <table class="admin-stats-table">
                 <thead>
@@ -78,11 +100,16 @@ $trackingExportUrl = 'db/tracking.php?' . http_build_query($exportQuery, '', '&'
                 </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($trackedRows as $row): ?>
-                    <tr>
+                <?php foreach ($trackedRows as $index => $row): ?>
+                    <?php
+                    $tileId = (int)($row['tile_id'] ?? 0);
+                    $tileTitle = (string)($row['tile_title'] ?? '');
+                    $tileSearchText = trim($tileTitle . ' #' . $tileId . ' ' . $tileId);
+                    ?>
+                    <tr data-admin-stats-row data-tile-search="<?= e($tileSearchText) ?>" <?= $index >= $trackingTopLimit ? 'hidden' : '' ?>>
                         <td>
-                            <strong><?= e($row['tile_title'] ?? '') ?></strong>
-                            <span>#<?= (int)($row['tile_id'] ?? 0) ?></span>
+                            <strong><?= e($tileTitle) ?></strong>
+                            <span>#<?= $tileId ?></span>
                         </td>
                         <td><?= (int)($row['total_clicks'] ?? 0) ?></td>
                         <td><?= (int)($row['tab_1_clicks'] ?? 0) ?></td>

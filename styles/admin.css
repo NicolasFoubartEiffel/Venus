@@ -881,6 +881,59 @@ button:active{transform:translateY(1px);}
     font-weight:800;
     text-decoration:none;
 }
+.admin-stats-tools{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    gap:12px;
+    margin:0 0 10px;
+}
+
+.admin-stats-search{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    min-width:240px;
+    color:var(--text-soft);
+    font-size:12px;
+    font-weight:800;
+}
+
+.admin-stats-search input{
+    width:100%;
+    min-height:36px;
+    box-sizing:border-box;
+    padding:0 12px;
+    border:1px solid #d4d9df;
+    border-radius:10px;
+    background:#fff;
+    color:var(--text-main);
+    font:inherit;
+}
+
+.admin-stats-show-all{
+    min-height:36px;
+    padding:0 14px;
+    border:1px solid var(--primary-border);
+    border-radius:10px;
+    background:var(--primary-soft);
+    color:var(--primary);
+    font-weight:800;
+}
+
+.admin-stats-show-all:hover{
+    background:var(--primary-soft-hover);
+}
+
+.admin-stats-summary{
+    margin:0 0 8px;
+    color:var(--text-soft);
+    font-size:13px;
+}
+
+.admin-stats-search-empty{
+    margin-bottom:10px;
+}
 
 .admin-export-link{
     display:inline-flex;
