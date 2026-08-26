@@ -30,3 +30,9 @@ node_modules/
 .env
 .env.*
 !.env.example
+# Database initialization: keep only the empty schema in Git
+init_db/*.sql
+init_db/*.dump
+init_db/*.backup
+init_db/*.bak
+!init_db/schema.sql

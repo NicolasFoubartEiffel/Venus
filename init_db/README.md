@@ -1,16 +1,7 @@
 # Initialisation base de donnees
 
-Ce dossier regroupe les scripts SQL a conserver avec le projet.
+Ce dossier ne doit contenir cote Git que le schema vide necessaire pour reconstruire une base Venus.
 
-Les scripts temporaires prepares sur le serveur peuvent rester dans `/tmp/`
-pendant les tests, puis etre copies ici uniquement quand ils sont valides.
+- `schema.sql` : structure des tables, contraintes, index et droits applicatifs, sans donnees reelles.
 
-Scripts principaux :
-
-- `gpt_venus_preprod_ready.sql` : dump complet transforme pour recreer une preprod.
-- `prod_migration_projects_details_20260603.sql` : migration a appliquer sur une prod existante.
-
-Scripts historiques conserves au cas ou :
-
-- `init.sql`
-- `venus.sql`
+Les dumps et exports contenant des donnees de prod/preprod doivent rester locaux et sont ignores par Git.
