@@ -21,6 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const densityInputs = qsa('[data-admin-density]');
     const statsToggle = qs('[data-admin-stats-toggle]');
     const statsPanel = $('admin-tracking-stats');
+    const statsParams = new URLSearchParams(window.location.search);
+    const shouldKeepStatsInView = Boolean(statsPanel) && (
+        window.location.hash === '#admin-tracking-stats'
+        || statsParams.has('stats')
+        || statsParams.has('date_from')
+        || statsParams.has('date_to')
+    );
 
     const categoryCheckboxes = qsa('#category-checkboxes input[type="checkbox"][name="category_ids[]"]');
 
@@ -49,6 +56,12 @@ document.addEventListener('DOMContentLoaded', () => {
         statsPanel.classList.toggle('is-open', open);
         statsToggle.classList.toggle('is-active', open);
         statsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    function keepStatsPanelInView() {
+        if (!shouldKeepStatsInView || !statsPanel || statsPanel.hidden) return;
+
+        statsPanel.scrollIntoView({ behavior: 'auto', block: 'start' });
     }
 
     if (statsToggle && statsPanel) {
@@ -795,4 +808,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initAdminSearch();
     initAdminDensity();
     setCreateMode();
+    requestAnimationFrame(keepStatsPanelInView);
+    setTimeout(keepStatsPanelInView, 250);
 });

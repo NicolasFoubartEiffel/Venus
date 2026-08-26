@@ -42,7 +42,7 @@ $trackingExportUrl = 'db/tracking.php?' . http_build_query($exportQuery, '', '&'
         </a>
     </div>
 
-    <form class="admin-stats-filters" method="get">
+    <form class="admin-stats-filters" method="get" action="admin.php#admin-tracking-stats">
         <input type="hidden" name="stats" value="1">
 
         <label>
@@ -58,7 +58,7 @@ $trackingExportUrl = 'db/tracking.php?' . http_build_query($exportQuery, '', '&'
         <button type="submit" class="admin-stats-filter-btn">Filtrer</button>
 
         <?php if ($trackingDateFrom !== '' || $trackingDateTo !== ''): ?>
-            <a class="admin-stats-reset" href="admin.php?stats=1">R&eacute;initialiser</a>
+            <a class="admin-stats-reset" href="admin.php?stats=1#admin-tracking-stats">R&eacute;initialiser</a>
         <?php endif; ?>
     </form>
 
