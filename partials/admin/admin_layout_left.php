@@ -15,6 +15,7 @@
         <form id="create-project-form" method="post" class="project-form-ui">
             <input type="hidden" name="action" id="project-action" value="create_project">
             <input type="hidden" name="id" id="project-id" value="">
+            <input type="hidden" name="csrf_token" value="<?= e($adminCsrfToken ?? '') ?>">
 
             <div class="form-grid">
 

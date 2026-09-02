@@ -1,5 +1,8 @@
 <?php
 require_once __DIR__ . '/db/functions.php';
+requireCurrentAdminPage();
+
+$adminCsrfToken = getCsrfToken();
 $projects = getAllProjects();
 $categories = getAllCategories();
 $trackingDateFrom = normalizeTrackingDate($_GET['date_from'] ?? '');
@@ -8,7 +11,6 @@ $trackingStatsOpen = isset($_GET['stats']) || $trackingDateFrom !== '' || $track
 $trackingStats = getTileInteractionStats($trackingDateFrom, $trackingDateTo);
 
 $pageTitle = "Administration – CRAc-RF";
-$isAdmin = true;
 require_once 'partials/header.php';
 
 ?>
@@ -45,6 +47,7 @@ require_once 'partials/header.php';
                     },
                     body: new URLSearchParams({
                         action: 'update_project_order',
+                        csrf_token: document.querySelector('input[name="csrf_token"]')?.value || '',
                         ids: JSON.stringify(orderedIds)
                     })
                 });

@@ -12,6 +12,7 @@ $trackingDateFrom = $trackingDateFrom ?? '';
 $trackingDateTo = $trackingDateTo ?? '';
 $trackingStatsOpen = $trackingStatsOpen ?? false;
 $trackingTopLimit = 3;
+$lastTrackingExport = function_exists('getLastTileStatsExport') ? getLastTileStatsExport() : null;
 
 $exportQuery = ['export' => 'csv'];
 
@@ -24,6 +25,31 @@ if ($trackingDateTo !== '') {
 }
 
 $trackingExportUrl = 'db/tracking.php?' . http_build_query($exportQuery, '', '&', PHP_QUERY_RFC3986);
+
+$lastTrackingExportAt = '';
+
+if ($lastTrackingExport) {
+    $lastExportTimestamp = strtotime((string)($lastTrackingExport['exported_at'] ?? ''));
+
+    if ($lastExportTimestamp) {
+        $trackingExportMonths = [
+            1 => 'Janvier',
+            2 => 'Fevrier',
+            3 => 'Mars',
+            4 => 'Avril',
+            5 => 'Mai',
+            6 => 'Juin',
+            7 => 'Juillet',
+            8 => 'Aout',
+            9 => 'Septembre',
+            10 => 'Octobre',
+            11 => 'Novembre',
+            12 => 'Decembre',
+        ];
+
+        $lastTrackingExportAt = 'Le ' . date('j', $lastExportTimestamp) . ' ' . $trackingExportMonths[(int)date('n', $lastExportTimestamp)] . ' ' . date('Y', $lastExportTimestamp) . ' à ' . date('H:i', $lastExportTimestamp);
+    }
+}
 ?>
 
 <section
@@ -38,9 +64,22 @@ $trackingExportUrl = 'db/tracking.php?' . http_build_query($exportQuery, '', '&'
             <p><?= (int) $totalTrackedClicks ?> clic(s) enregistr&eacute;(s)</p>
         </div>
 
-        <a class="admin-export-link" href="<?= e($trackingExportUrl) ?>">
-            Export CSV
-        </a>
+        <div class="admin-export-block">
+            <a class="admin-export-link" href="<?= e($trackingExportUrl) ?>">
+                Export CSV
+            </a>
+
+            <?php if ($lastTrackingExport): ?>
+                <p class="admin-export-last">
+                    <span class="admin-export-last-label">Dernier export demand&eacute; par :</span>
+                    <span class="admin-export-last-user"><?= e((string)($lastTrackingExport['nom'] ?? 'admin')) ?></span>
+
+                    <?php if ($lastTrackingExportAt !== ''): ?>
+                        <span class="admin-export-last-date"><?= e($lastTrackingExportAt) ?></span>
+                    <?php endif; ?>
+                </p>
+            <?php endif; ?>
+        </div>
     </div>
 
     <form class="admin-stats-filters" method="get" action="admin.php#admin-tracking-stats">
@@ -69,7 +108,7 @@ $trackingExportUrl = 'db/tracking.php?' . http_build_query($exportQuery, '', '&'
         <div class="admin-stats-tools" data-admin-stats-tools data-limit="<?= (int) $trackingTopLimit ?>">
             <label class="admin-stats-search">
                 <span>Rechercher une tuile</span>
-                <input type="search" placeholder="Nom ou ID de tuile" data-admin-stats-search>
+                <input type="search" placeholder="Nom de tuile" data-admin-stats-search>
             </label>
 
             <?php if (count($trackedRows) > $trackingTopLimit): ?>
@@ -102,14 +141,12 @@ $trackingExportUrl = 'db/tracking.php?' . http_build_query($exportQuery, '', '&'
                 <tbody>
                 <?php foreach ($trackedRows as $index => $row): ?>
                     <?php
-                    $tileId = (int)($row['tile_id'] ?? 0);
                     $tileTitle = (string)($row['tile_title'] ?? '');
-                    $tileSearchText = trim($tileTitle . ' #' . $tileId . ' ' . $tileId);
+                    $tileSearchText = trim($tileTitle);
                     ?>
                     <tr data-admin-stats-row data-tile-search="<?= e($tileSearchText) ?>" <?= $index >= $trackingTopLimit ? 'hidden' : '' ?>>
                         <td>
                             <strong><?= e($tileTitle) ?></strong>
-                            <span>#<?= $tileId ?></span>
                         </td>
                         <td><?= (int)($row['total_clicks'] ?? 0) ?></td>
                         <td><?= (int)($row['tab_1_clicks'] ?? 0) ?></td>

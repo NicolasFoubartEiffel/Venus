@@ -354,16 +354,52 @@ document.addEventListener('DOMContentLoaded', () => {
             menubar: true,
             branding: false,
             resize: true,
+
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount code',
-            toolbar: 'undo redo | blocks fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat | code',
+
+            toolbar: 'undo redo | styles | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat | code',
+
+            style_formats: [
+                {
+                    title: 'Titre',
+                    block: 'h2',
+                    classes: 'wysiwyg-title'
+                },
+                {
+                    title: 'Standard',
+                    block: 'p',
+                    classes: 'wysiwyg-standard'
+                }
+            ],
+
             link_default_target: '_blank',
-            content_style: 'body { font-family: Segoe UI, sans-serif; font-size: 14px; }',
+
+            content_style: `
+        body {
+            font-family: Segoe UI, sans-serif;
+            font-size: 16px;
+            line-height: 1.2;
+        }
+
+        .wysiwyg-title {
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        .wysiwyg-standard {
+            font-size: 16px;
+            line-height: 1.2;
+        }
+    `,
+
             paste_preprocess: (_, args) => {
                 args.content = stripFontStylesFromHtml(args.content || '');
             },
+
             setup: (editor) => {
                 editor.on('init', () => {
                     const activePane = qs('.seg-pane.is-active');
+
                     if (activePane && activePane.contains(editor.getElement())) {
                         try {
                             editor.execCommand('mceRepaint');
@@ -490,6 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function api(action, payload = {}) {
         const formData = new FormData();
         formData.append('action', action);
+        formData.append('csrf_token', form.elements.csrf_token?.value || '');
 
         Object.entries(payload).forEach(([key, value]) => {
             if (Array.isArray(value)) {

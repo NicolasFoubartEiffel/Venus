@@ -955,6 +955,44 @@ button:active{transform:translateY(1px);}
     background:var(--primary-soft-hover);
 }
 
+.admin-export-block{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:6px;
+}
+
+.admin-export-last{
+    max-width:240px;
+    margin:0;
+    color:var(--text-soft);
+    font-size:11px;
+    font-weight:600;
+    line-height:1.35;
+    text-align:right;
+}
+
+.admin-export-last span{
+    display:block;
+}
+
+.admin-export-last-label{
+    color:var(--text-soft);
+    font-weight:700;
+}
+
+.admin-export-last-user{
+    margin-top:2px;
+    color:var(--text-main);
+    font-weight:800;
+}
+
+.admin-export-last-date{
+    margin-top:2px;
+    color:var(--text-soft);
+    font-weight:700;
+}
+
 .admin-stats-empty{
     margin:0;
     padding:12px 14px;
@@ -1095,6 +1133,15 @@ button:active{transform:translateY(1px);}
 
     .admin-stats-head{
         flex-direction:column;
+    }
+
+    .admin-export-block{
+        align-items:flex-start;
+    }
+
+    .admin-export-last{
+        max-width:none;
+        text-align:left;
     }
 }
 

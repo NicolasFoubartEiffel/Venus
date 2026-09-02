@@ -199,6 +199,20 @@
 .modal-body .wysiwyg--compact p{
     margin: .7rem 0;
 }
+.modal-body .wysiwyg--compact {
+    margin-top: 12px;
+    padding: 16px;
+    border: 1px solid rgba(79,70,229,.08);
+    border-radius: 18px;
+    background: linear-gradient(180deg, #fbfcff 0%, #f8faff 100%);
+
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.modal-body .wysiwyg--compact .wysiwyg-title {
+    font-size: 18px;
+}
 
 .modal-body .wysiwyg--compact ul,
 .modal-body .wysiwyg--compact ol{

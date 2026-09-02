@@ -10,6 +10,9 @@ collect_sympa_mails.php
 # Local tool downloads
 .tools/
 
+# Local database dumps and one-off migration scratch files
+init_db/
+
 # Operating system files
 Thumbs.db
 Desktop.ini

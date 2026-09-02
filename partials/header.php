@@ -1,23 +1,10 @@
 <?php
 global $USER;
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-$USER = isset($_SESSION['ldap_data'][0]) && is_array($_SESSION['ldap_data'][0])
-    ? (object) $_SESSION['ldap_data'][0]
-    : null;
+$USER = getCurrentLdapUser();
 
 if ($USER === null) {
-    $returnPath = $_SERVER['REQUEST_URI'] ?? '/apps/venus/index.php';
-
-    if ($returnPath === '' || $returnPath[0] !== '/') {
-        $returnPath = '/apps/venus/index.php';
-    }
-
-    header('Location: /apps/index.php?' . http_build_query(['app' => $returnPath], '', '&', PHP_QUERY_RFC3986));
-    exit;
+    redirectToLoginPage();
 }
 
 $currentUser = $USER->uid[0] ?? '';
@@ -28,14 +15,8 @@ if ($currentUser !== '') {
     $favorites = getUserFavoriteProjectIds($currentUser);
 }
 
-$adminList = [
-    'nicolas.foubart',
-    'mickael.huneau',
-    'jonathan.gibert',
-    'jamila.al-khatib'
-];
-
-$isAdmin = in_array($currentUser, $adminList, true);
+$csrfToken = getCsrfToken();
+$isAdmin = isAdminUsername($currentUser);
 $isAdminPage = basename($_SERVER['PHP_SELF']) === 'admin.php';
 
 $pageTitle = $pageTitle ?? 'Projets Venus';
@@ -44,6 +25,7 @@ $pageTitle = $pageTitle ?? 'Projets Venus';
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="<?= e($csrfToken) ?>">
     <title><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></title>
 
     <link rel="stylesheet" href="styles/main.css">
