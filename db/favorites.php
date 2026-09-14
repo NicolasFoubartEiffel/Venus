@@ -29,6 +29,8 @@ try {
         throw new RuntimeException("Action inconnue.");
     }
 
+    requireValidCsrfTokenJson();
+
     $projectId = (int)($_POST['project_id'] ?? 0);
 
     if ($projectId <= 0) {

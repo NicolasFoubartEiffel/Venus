@@ -1,23 +1,10 @@
 <?php
 global $USER;
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-$USER = isset($_SESSION['ldap_data'][0]) && is_array($_SESSION['ldap_data'][0])
-    ? (object) $_SESSION['ldap_data'][0]
-    : null;
+$USER = getCurrentLdapUser();
 
 if ($USER === null) {
-    $returnPath = $_SERVER['REQUEST_URI'] ?? '/apps/venus/index.php';
-
-    if ($returnPath === '' || $returnPath[0] !== '/') {
-        $returnPath = '/apps/venus/index.php';
-    }
-
-    header('Location: /apps/index.php?' . http_build_query(['app' => $returnPath], '', '&', PHP_QUERY_RFC3986));
-    exit;
+    redirectToLoginPage();
 }
 
 $currentUser = $USER->uid[0] ?? '';
@@ -28,14 +15,8 @@ if ($currentUser !== '') {
     $favorites = getUserFavoriteProjectIds($currentUser);
 }
 
-$adminList = [
-    'nicolas.foubart',
-    'mickael.huneau',
-    'jonathan.gibert',
-    'jamila.al-khatib'
-];
-
-$isAdmin = in_array($currentUser, $adminList, true);
+$csrfToken = getCsrfToken();
+$isAdmin = isAdminUsername($currentUser);
 $isAdminPage = basename($_SERVER['PHP_SELF']) === 'admin.php';
 
 $pageTitle = $pageTitle ?? 'Projets Venus';
@@ -44,6 +25,7 @@ $pageTitle = $pageTitle ?? 'Projets Venus';
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="<?= e($csrfToken) ?>">
     <title><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></title>
 
     <link rel="stylesheet" href="styles/main.css">
@@ -81,6 +63,18 @@ $pageTitle = $pageTitle ?? 'Projets Venus';
 
         <div class="header-right">
             <?php if ($isAdmin): ?>
+                <?php if ($isAdminPage): ?>
+                    <button
+                            type="button"
+                            class="admin-header-tool"
+                            data-admin-stats-toggle
+                            aria-controls="admin-tracking-stats"
+                            aria-expanded="false"
+                    >
+                        Statistiques des tuiles
+                    </button>
+                <?php endif; ?>
+
                 <a class="admin-link" href="<?= $isAdminPage ? 'index.php' : 'admin.php' ?>">
                     <span class="admin-link-icon" aria-hidden="true"><?= $isAdminPage ? '&larr;' : '&#9881;' ?></span>
                     <span><?= $isAdminPage ? 'Retour accueil' : 'Administration' ?></span>

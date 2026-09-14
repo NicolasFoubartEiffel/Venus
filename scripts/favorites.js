@@ -45,6 +45,7 @@ document.addEventListener('click', async (e) => {
     const formData = new FormData();
     formData.append('action', 'toggle_favorite');
     formData.append('project_id', projectId);
+    formData.append('csrf_token', document.querySelector('meta[name="csrf-token"]')?.content || '');
 
     try {
         const response = await fetch(endpoint, {

@@ -14,11 +14,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const adminLeft = qs('.admin-left');
     const adminRight = qs('.admin-right');
+    const formPanel = qs('[data-project-form-panel]');
+    const formBody = qs('[data-project-form-body]');
+    const formToggle = qs('[data-project-form-toggle]');
     const projectList = $('sortable-projects');
     const adminSearchInput = qs('[data-admin-project-search]');
     const adminSearchClear = qs('[data-admin-clear-search]');
     const adminSearchEmpty = qs('[data-admin-search-empty]');
+    const adminFilterButtons = qsa('[data-admin-filter]');
     const densityInputs = qsa('[data-admin-density]');
+    const statsToggle = qs('[data-admin-stats-toggle]');
+    const statsPanel = $('admin-tracking-stats');
 
     const categoryCheckboxes = qsa('#category-checkboxes input[type="checkbox"][name="category_ids[]"]');
 
@@ -38,7 +44,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const segWrap = qs('.seg-wrap');
 
     let currentMode = 'create';
+    let activeAdminFilter = { type: 'all', categoryId: '' };
     const densityStorageKey = 'crac-admin-density';
+
+    function setStatsPanelOpen(open) {
+        if (!statsPanel || !statsToggle) return;
+
+        statsPanel.hidden = !open;
+        statsPanel.classList.toggle('is-open', open);
+        statsToggle.classList.toggle('is-active', open);
+        statsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+
+    if (statsToggle && statsPanel) {
+        setStatsPanelOpen(!statsPanel.hidden);
+
+        statsToggle.addEventListener('click', () => {
+            setStatsPanelOpen(statsPanel.hidden);
+        });
+    }
 
     function stripFontStylesFromNode(root) {
         if (!root?.querySelectorAll) return;
@@ -125,11 +150,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function buildAdminCardIndex(card) {
         const title = qs('.gache-left .title', card)?.textContent || '';
+        const searchText = card.dataset.projectSearch || title;
 
         return {
             card,
             title: title.trim(),
-            text: normalizeSearchText(title),
+            text: normalizeSearchText(searchText),
+            hidden: card.dataset.projectHidden === '1',
+            incomplete: card.dataset.projectIncomplete === '1',
+            categories: new Set((card.dataset.projectCategories || '').split(/\s+/).filter(Boolean)),
         };
     }
 
@@ -137,6 +166,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!projectList) return [];
 
         return qsa('.project-card', projectList).map(buildAdminCardIndex);
+    }
+
+    function matchesAdminFilter(entry) {
+        if (activeAdminFilter.type === 'hidden') return entry.hidden;
+        if (activeAdminFilter.type === 'incomplete') return entry.incomplete;
+        if (activeAdminFilter.type === 'category') return entry.categories.has(activeAdminFilter.categoryId);
+
+        return true;
     }
 
     function applyAdminSearch() {
@@ -148,7 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const matches = [];
 
         index.forEach((entry) => {
-            const visible = terms.length === 0 || terms.every((term) => entry.text.includes(term));
+            const matchesSearch = terms.length === 0 || terms.every((term) => entry.text.includes(term));
+            const visible = matchesSearch && matchesAdminFilter(entry);
 
             entry.card.hidden = !visible;
             entry.card.setAttribute('aria-hidden', visible ? 'false' : 'true');
@@ -163,8 +201,82 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (adminSearchEmpty) {
-            adminSearchEmpty.hidden = query === '' || matches.length > 0;
+            adminSearchEmpty.hidden = matches.length > 0;
         }
+    }
+
+    function initAdminStatsTable() {
+        if (!statsPanel) return;
+
+        const tools = qs('[data-admin-stats-tools]', statsPanel);
+        const rows = qsa('[data-admin-stats-row]', statsPanel);
+        const searchInput = qs('[data-admin-stats-search]', statsPanel);
+        const showAllButton = qs('[data-admin-stats-show-all]', statsPanel);
+        const summary = qs('[data-admin-stats-summary]', statsPanel);
+        const emptySearch = qs('[data-admin-stats-search-empty]', statsPanel);
+        const limit = Math.max(1, Number(tools?.dataset.limit || 5));
+        let expanded = false;
+
+        if (!rows.length) return;
+
+        function applyStatsView() {
+            const query = normalizeSearchText(searchInput?.value || '');
+            const terms = query.split(/\s+/).filter(Boolean);
+            const hasQuery = terms.length > 0;
+            let matchedCount = 0;
+            let visibleCount = 0;
+
+            rows.forEach((row) => {
+                const rowText = normalizeSearchText(row.dataset.tileSearch || row.textContent || '');
+                const matches = !hasQuery || terms.every((term) => rowText.includes(term));
+
+                if (matches) {
+                    matchedCount += 1;
+                }
+
+                const visible = matches && (hasQuery || expanded || matchedCount <= limit);
+                row.hidden = !visible;
+
+                if (visible) {
+                    visibleCount += 1;
+                }
+            });
+
+            if (showAllButton) {
+                showAllButton.hidden = hasQuery || rows.length <= limit;
+                showAllButton.textContent = expanded ? 'Voir le top ' + limit : 'Voir tout';
+            }
+
+            if (summary) {
+                if (hasQuery) {
+                    summary.textContent = `${visibleCount} resultat(s) sur ${rows.length} tuile(s)`;
+                } else if (expanded) {
+                    summary.textContent = `${visibleCount} tuile(s) affichee(s)`;
+                } else {
+                    summary.textContent = `Top ${visibleCount} sur ${rows.length} tuile(s)`;
+                }
+            }
+
+            if (emptySearch) {
+                emptySearch.hidden = !hasQuery || matchedCount > 0;
+            }
+        }
+
+        searchInput?.addEventListener('input', applyStatsView);
+
+        searchInput?.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+
+            searchInput.value = '';
+            applyStatsView();
+        });
+
+        showAllButton?.addEventListener('click', () => {
+            expanded = !expanded;
+            applyStatsView();
+        });
+
+        applyStatsView();
     }
 
     function getEditor(id) {
@@ -204,6 +316,27 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (_) {}
         });
     }
+    function setProjectFormOpen(open, { scroll = false, focus = false } = {}) {
+        if (!formPanel || !formBody || !formToggle) return;
+
+        setDisclosureOpen(formBody, open);
+        formPanel.classList.toggle('is-collapsed', !open);
+        formPanel.classList.toggle('is-open', open);
+        formToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        formToggle.textContent = open ? 'Replier' : '+ Ajouter une tuile';
+
+        if (open) {
+            setTimeout(() => repaintEditorsInPane(formBody), 80);
+        }
+
+        if (open && scroll) {
+            scrollToForm();
+        }
+
+        if (open && focus) {
+            focusFormTitle();
+        }
+    }
 
     function initTinyMCE() {
         const tinymce = getTinyMCE();
@@ -221,16 +354,52 @@ document.addEventListener('DOMContentLoaded', () => {
             menubar: true,
             branding: false,
             resize: true,
+
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount code',
-            toolbar: 'undo redo | blocks fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat | code',
+
+            toolbar: 'undo redo | styles | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat | code',
+
+            style_formats: [
+                {
+                    title: 'Titre',
+                    block: 'h2',
+                    classes: 'wysiwyg-title'
+                },
+                {
+                    title: 'Standard',
+                    block: 'p',
+                    classes: 'wysiwyg-standard'
+                }
+            ],
+
             link_default_target: '_blank',
-            content_style: 'body { font-family: Segoe UI, sans-serif; font-size: 14px; }',
+
+            content_style: `
+        body {
+            font-family: Segoe UI, sans-serif;
+            font-size: 16px;
+            line-height: 1.2;
+        }
+
+        .wysiwyg-title {
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        .wysiwyg-standard {
+            font-size: 16px;
+            line-height: 1.2;
+        }
+    `,
+
             paste_preprocess: (_, args) => {
                 args.content = stripFontStylesFromHtml(args.content || '');
             },
+
             setup: (editor) => {
                 editor.on('init', () => {
                     const activePane = qs('.seg-pane.is-active');
+
                     if (activePane && activePane.contains(editor.getElement())) {
                         try {
                             editor.execCommand('mceRepaint');
@@ -357,6 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function api(action, payload = {}) {
         const formData = new FormData();
         formData.append('action', action);
+        formData.append('csrf_token', form.elements.csrf_token?.value || '');
 
         Object.entries(payload).forEach(([key, value]) => {
             if (Array.isArray(value)) {
@@ -394,8 +564,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
         target.scrollIntoView({
             behavior: 'smooth',
-            block: 'start',
+            block: 'nearest',
         });
+    }
+
+    function prefersReducedMotion() {
+        return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function finishDisclosureAnimation(panel) {
+        const timeoutId = Number(panel.dataset.disclosureTimer || 0);
+
+        if (timeoutId) {
+            window.clearTimeout(timeoutId);
+        }
+    }
+
+    function setDisclosureOpen(panel, open) {
+        if (!panel) return;
+
+        finishDisclosureAnimation(panel);
+
+        if (prefersReducedMotion()) {
+            panel.hidden = !open;
+            panel.style.maxHeight = '';
+            panel.style.opacity = '';
+            return;
+        }
+
+        if (open) {
+            panel.hidden = false;
+            panel.style.overflow = 'hidden';
+            panel.style.maxHeight = '0px';
+            panel.style.opacity = '0';
+
+            requestAnimationFrame(() => {
+                panel.style.maxHeight = `${panel.scrollHeight}px`;
+                panel.style.opacity = '1';
+            });
+
+            const timer = window.setTimeout(() => {
+                panel.style.maxHeight = '';
+                panel.style.overflow = '';
+                panel.dataset.disclosureTimer = '';
+            }, 260);
+            panel.dataset.disclosureTimer = String(timer);
+            return;
+        }
+
+        panel.style.overflow = 'hidden';
+        panel.style.maxHeight = `${panel.scrollHeight}px`;
+        panel.style.opacity = '1';
+
+        requestAnimationFrame(() => {
+            panel.style.maxHeight = '0px';
+            panel.style.opacity = '0';
+        });
+
+        const timer = window.setTimeout(() => {
+            panel.hidden = true;
+            panel.style.maxHeight = '';
+            panel.style.opacity = '';
+            panel.style.overflow = '';
+            panel.dataset.disclosureTimer = '';
+        }, 260);
+        panel.dataset.disclosureTimer = String(timer);
     }
 
     function focusFormTitle() {
@@ -403,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!titleInput) return;
 
         setTimeout(() => {
-            titleInput.focus();
+            titleInput.focus({ preventScroll: true });
             titleInput.select?.();
         }, 350);
     }
@@ -447,16 +680,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function setCreateMode({ scroll = false, focus = false } = {}) {
+    function setCreateMode({ scroll = false, focus = false, open = false } = {}) {
         resetFormCompletely();
-
-        if (scroll) {
-            scrollToForm();
-        }
-
-        if (focus) {
-            focusFormTitle();
-        }
+        setProjectFormOpen(open || scroll || focus, { scroll, focus });
     }
 
     function setEditMode(project) {
@@ -489,8 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fillEditorFields(project);
         activatePane(0);
 
-        scrollToForm();
-        focusFormTitle();
+        setProjectFormOpen(true, { scroll: true, focus: true });
     }
 
     function closeCard(card) {
@@ -507,7 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (body) {
-            body.hidden = true;
+            setDisclosureOpen(body, false);
         }
     }
 
@@ -525,7 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (body) {
-            body.hidden = false;
+            setDisclosureOpen(body, true);
         }
     }
 
@@ -551,6 +776,22 @@ document.addEventListener('DOMContentLoaded', () => {
             applyAdminSearch();
         });
 
+        adminFilterButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                activeAdminFilter = {
+                    type: button.dataset.adminFilter || 'all',
+                    categoryId: button.dataset.categoryId || '',
+                };
+
+                adminFilterButtons.forEach((filterButton) => {
+                    filterButton.classList.toggle('is-active', filterButton === button);
+                });
+
+                applyAdminSearch();
+            });
+        });
+
+        applyAdminSearch();
     }
 
     function applyAdminDensity(mode = 'dense') {
@@ -653,6 +894,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = button.closest('.project-card');
             const badge = card?.querySelector('.visibility-badge');
 
+            if (card) {
+                card.dataset.projectHidden = hidden ? '1' : '0';
+            }
+
             if (badge) {
                 badge.classList.toggle('is-hidden', hidden);
                 badge.classList.toggle('is-visible', !hidden);
@@ -664,6 +909,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (String(idInput?.value || '') === String(projectId)) {
                 setHidden(hidden ? 1 : 0);
             }
+
+            applyAdminSearch();
         } catch (error) {
             console.error(error);
             alert(error.message || 'Impossible de modifier la visibilité.');
@@ -768,12 +1015,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     cancelBtn?.addEventListener('click', () => {
-        setCreateMode({ scroll: true, focus: true });
+        setCreateMode();
+    });
+
+    formToggle?.addEventListener('click', () => {
+        const shouldOpen = Boolean(formBody?.hidden);
+
+        if (shouldOpen && currentMode !== 'create') {
+            setCreateMode({ open: true, focus: true });
+            return;
+        }
+
+        setProjectFormOpen(shouldOpen, { focus: shouldOpen });
     });
 
     bootTinyMCE();
     initSegmented();
     initAdminSearch();
+    initAdminStatsTable();
     initAdminDensity();
     setCreateMode();
 });

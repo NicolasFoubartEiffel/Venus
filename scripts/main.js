@@ -246,6 +246,32 @@ document.addEventListener('DOMContentLoaded', () => {
         return { key: '', label: '', view: 'project' };
     };
 
+    const trackTileInteraction = (tile, view) => {
+        const projectId = tile?.dataset?.projectId || modal?.dataset?.projectId || '';
+
+        if (!projectId || !['description', 'resources', 'contact'].includes(view)) {
+            return;
+        }
+
+        const params = new URLSearchParams({
+            tile_id: projectId,
+            tab_key: view,
+        });
+
+        fetch('db/tracking.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            },
+            body: params,
+            keepalive: true,
+        })
+            .then((response) => response.ok ? response : Promise.reject(response))
+            .catch((error) => {
+                console.error('Tracking impossible :', error);
+            });
+    };
+
     const setButtonAvailability = (button, value, titleWhenAvailable = '') => {
         if (!button) return;
 
@@ -390,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const updateModalContent = (view) => {
+    const updateModalContent = (view, options = {}) => {
         if (!currentData) return;
 
         currentView = view;
@@ -400,6 +426,10 @@ document.addEventListener('DOMContentLoaded', () => {
         forceLinksTargetBlank(modalDesc);
         updateModalActionButtons();
         setModalActionActive(view);
+
+        if (!options.skipTracking) {
+            trackTileInteraction(currentTile, view);
+        }
     };
 
     const copyCurrentTileLink = async (button) => {
@@ -487,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const openModal = (tile, view = 'description') => {
+    const openModal = (tile, view = 'description', options = {}) => {
         currentTile = tile;
         modal.dataset.projectId = tile.dataset.projectId || '';
 
@@ -521,7 +551,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentData = buildTileData(tile);
 
         updateTileButtons(tile);
-        updateModalContent(view);
+        updateModalContent(view, {
+            skipTracking: Boolean(options.skipTracking),
+        });
 
         openBasicModal(modal);
         setTileActive(tile, true);

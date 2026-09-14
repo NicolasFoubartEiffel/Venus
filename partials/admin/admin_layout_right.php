@@ -1,6 +1,45 @@
+<?php
+if (!function_exists('admin_project_has_content')) {
+    function admin_project_has_content(string $html): bool
+    {
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = str_replace("\xc2\xa0", ' ', $text);
+        $text = preg_replace('/\s+/u', ' ', $text);
+
+        return trim((string)$text) !== '';
+    }
+}
+
+$adminCategories = $categories ?? [];
+$totalProjects = count($projects ?? []);
+$hiddenProjects = 0;
+$incompleteProjects = 0;
+
+foreach (($projects ?? []) as $projectForCount) {
+    if ((int)($projectForCount['hidden'] ?? 0) === 1) {
+        $hiddenProjects += 1;
+    }
+
+    $hasAllCoreSections = admin_project_has_content((string)($projectForCount['contact_details'] ?? ''))
+        && admin_project_has_content((string)($projectForCount['resources_details'] ?? ''))
+        && admin_project_has_content((string)($projectForCount['description_details'] ?? ''));
+
+    if (!$hasAllCoreSections) {
+        $incompleteProjects += 1;
+    }
+}
+?>
+
 <main class="admin-right is-density-dense">
     <div class="admin-list-head">
-        <h2>Projets existants</h2>
+        <div>
+            <h2>Projets existants</h2>
+            <p class="admin-list-counts">
+                <?= (int) $totalProjects ?> tuile(s)
+                &middot; <?= (int) $hiddenProjects ?> masqu&eacute;e(s)
+                &middot; <?= (int) $incompleteProjects ?> &agrave; compl&eacute;ter
+            </p>
+        </div>
 
         <fieldset class="density-toggle" aria-label="Densit&eacute; d'affichage">
             <label>
@@ -38,6 +77,18 @@
         </div>
     </div>
 
+    <div class="admin-filter-chips" aria-label="Filtres des projets">
+        <button type="button" class="admin-filter-chip is-active" data-admin-filter="all">Tous</button>
+        <button type="button" class="admin-filter-chip" data-admin-filter="hidden">Masqu&eacute;s</button>
+        <button type="button" class="admin-filter-chip" data-admin-filter="incomplete">&Agrave; compl&eacute;ter</button>
+
+        <?php foreach ($adminCategories as $cat): ?>
+            <button type="button" class="admin-filter-chip" data-admin-filter="category" data-category-id="<?= (int)($cat['id'] ?? 0) ?>">
+                <?= htmlspecialchars(categoryDisplayName((string)($cat['nom'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+            </button>
+        <?php endforeach; ?>
+    </div>
+
     <div class="project-columns-admin">
         <div class="project-column" id="sortable-projects">
             <?php if (!empty($projects)): ?>
@@ -58,4 +109,5 @@
             <input type="hidden" name="id" value="">
         </form>
     </div>
+
 </main>
